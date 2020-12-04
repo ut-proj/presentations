@@ -1,5 +1,5 @@
 FROM klakegg/hugo:0.78.2-alpine
 
-RUN mkdir -p /presentations
+ADD docker /src/
 
 EXPOSE 1313
