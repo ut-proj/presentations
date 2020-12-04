@@ -1,5 +1,6 @@
 @import "reveal-js/css/theme/template/mixins";
 @import "reveal-js/css/theme/template/settings";
+@import "fonts";
 
 $backgroundColor: #222;
 
@@ -7,11 +8,13 @@ $mainColor: #fff;
 $headingColor: #fff;
 
 $mainFontSize: 38px;
-$mainFont: 'Source Sans Pro', Helvetica, sans-serif;
-$headingFont: 'Source Sans Pro', Helvetica, sans-serif;
+$mainFont: Montserrat, Helvetica, sans-serif;
+$auxFontSize: 38px;
+$auxFont: Castoro, 'New Times Roman', serif;
+$headingFont: Orbitron, Helvetica, sans-serif;
 $headingTextShadow: none;
 $headingLetterSpacing: normal;
-$headingTextTransform: uppercase;
+$headingTextTransform: none;
 $headingFontWeight: 600;
 $linkColor: #42affa;
 $linkColorHover: lighten( $linkColor, 15% );

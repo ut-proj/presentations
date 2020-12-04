@@ -182,7 +182,7 @@ Don't forget your towel when you leave.
 
 ---
 
-## Qs?
+## Q & A Time
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -201,4 +201,18 @@ You're a bunch of really loopy froods. What can I say?
 [//]: Speaker-Notes:
 {{% note %}}
 Here's how you can reach me ...
+{{% /note %}}
+
+---
+
+#### Resources
+
+* LFE site: https://lfe.io/
+* Mail list: http://groups.google.com/group/lisp-flavoured-erlang
+* LFE Twits: @ErlangLisp
+* Project site: https://github.com/ORG/NAME
+
+[//]: Speaker-Notes:
+{{% note %}}
+Here's where stuff is ...
 {{% /note %}}
