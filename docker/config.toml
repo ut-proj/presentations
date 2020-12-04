@@ -23,3 +23,9 @@ lineNos = false
 
 [params.reveal_hugo]
 highlight_theme = "atom-one-dark"
+custom_theme = "custom-theme.scss"
+custom_theme_compile = true
+
+[params.reveal_hugo.custom_theme_options]
+targetPath = "css/custom-theme.css"
+enableSourceMap = true

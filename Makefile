@@ -5,6 +5,7 @@ PORT=1313
 PRES_NAME=docker
 PWD=$(shell pwd)
 CONTENT_DIR=$(PWD)/content
+THEME_DIR=$(PWD)/theme
 OUTPUT_DIR=$(PWD)/output
 PDF_DIR=$(PWD)/pdf
 PDF_GEN_TAG=astefanutti/decktape
@@ -15,7 +16,10 @@ build:
 	@docker build -t $(TAG) .
 
 run: build
-	@docker run -it -p $(PORT):$(PORT) -v $(CONTENT_DIR):/src/content $(TAG) \
+	@docker run -it -p $(PORT):$(PORT) \
+	-v $(CONTENT_DIR):/src/content \
+	-v $(THEME_DIR):/src/assets \
+	$(TAG) \
 	server
 
 pdf: build
@@ -37,7 +41,10 @@ new: build
 	new site $(PRES_NAME)
 
 shell: build
-	@docker run -it -v $(CONTENT_DIR):/src/content --entrypoint=bash $(TAG)
+	@docker run -it \
+	-v $(CONTENT_DIR):/src/content \
+	-v $(THEME_DIR):/src/assets \
+	--entrypoint=bash $(TAG)
 
 clean-all:
 	@-docker volume rm $$(docker volume ls -qf dangling=true)

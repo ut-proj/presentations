@@ -5,11 +5,6 @@ outputs = ["Reveal"]
 [logo]
 src = "LFE-logo-6-square.svg"
 
-[reveal_hugo]
-theme = "night"
-highlight_theme = "atom-one-dark"
-margin = 0.2
-
 [reveal_hugo.templates.green]
 background = "#424242"
 transition = "convex"

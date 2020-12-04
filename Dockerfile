@@ -1,4 +1,4 @@
-FROM klakegg/hugo:0.78.2-alpine
+FROM klakegg/hugo:0.78.2-ext-alpine
 
 ADD docker /src/
 
