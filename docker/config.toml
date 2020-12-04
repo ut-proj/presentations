@@ -7,3 +7,19 @@ theme = "reveal-hugo"
 baseName = "index"
 mediaType = "text/html"
 isHTML = true
+
+[markup.highlight]
+codeFences = true
+style = "dracula"
+#style = "rrt"
+#style = "solarized-dark"
+#style = "solarized-dark256"
+#style = "vim"
+#style = "native"
+#style = "paraiso-dark"
+tabWidth = 2
+lineNoStart = 1
+lineNos = false
+
+[params.reveal_hugo]
+highlight_theme = "atom-one-dark"
