@@ -38,6 +38,20 @@ Edit the slides:
 * Open up `./content/_index.md` and edit as needed for your LFE presentation.
 * If you've still got `make run` running, changes in the Markdown file will auto-load in your browser.
 
+## Themes
+
+This template comes with three themes and may be set by editing `./docker/config.toml`
+to comment out the undwanted themes and leave uncommented the desired theme:
+
+``` toml
+[params.reveal_hugo]
+#custom_theme = "lfe-dark.scss"
+custom_theme = "lfe-light.scss"
+#custom_theme = "lfe-green.scss"
+```
+
+After editing this file, you will need to stop the local server and re-run
+`make run`.
 
 ## Resources
 

@@ -3,10 +3,12 @@
 @import "fonts";
 @import "common";
 
-$backgroundColor: #222;
+$backgroundColor: #fff;
 $backgroundImage: url(LFE-logo-darker-greys-6-square-x3000.png);
-$mainColor: #fff;
-$headingColor: #99BF17;
+$mainColor: #222;
+$headingColor: #667828;
+
+$quoteBack: #CFD4BD;
 
 $linkColor: #42affa;
 $linkColorHover: lighten( $linkColor, 15% );
@@ -23,4 +25,8 @@ section.has-light-background {
 
 .reveal pre {
 	margin: 50px auto;
+}
+
+section blockquote {
+    background-color: $quoteBack !important;
 }

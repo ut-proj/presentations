@@ -14,3 +14,12 @@ $heading3Size: 1.3em;
 $heading4Size: 1.0em;
 
 $borderRadius: 8px;
+
+div.highlight pre {
+	border-radius: $borderRadius;
+}
+
+section blockquote {
+    font-family: $auxFont;
+    border-radius: $borderRadius;
+}
