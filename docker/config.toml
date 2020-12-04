@@ -8,6 +8,9 @@ baseName = "index"
 mediaType = "text/html"
 isHTML = true
 
+[markup.goldmark.renderer]
+unsafe = true
+
 [markup.highlight]
 codeFences = true
 style = "dracula"
@@ -22,9 +25,12 @@ lineNoStart = 1
 lineNos = false
 
 [params.reveal_hugo]
+theme = "night"
+margin = 0.2
 highlight_theme = "atom-one-dark"
 custom_theme = "custom-theme.scss"
 custom_theme_compile = true
+plugins = ["plugin/menu/menu.js"]
 
 [params.reveal_hugo.custom_theme_options]
 targetPath = "css/custom-theme.css"
