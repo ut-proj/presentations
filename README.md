@@ -2,6 +2,11 @@
 
 Use this when giving LFE presentations!
 
+There is a live demo of this sample presentation here:
+
+* [LFE Dark Theme](https://lfe.io/slide-template/dark)
+* [LFE Light Theme](https://lfe.io/slide-template/light)
+* [LFE Green Theme](https://lfe.io/slide-template/green) (medium)
 
 ## Step 0
 
