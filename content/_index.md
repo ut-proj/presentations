@@ -22,9 +22,17 @@ Welcome to the demo presentation!
 
 ## Slide Two
 
-* Point 1
-* Point 2
-* Point 3
+Animating Bullets:
+
+<ul>
+<li class="fragment">Point 1 (Fade in)</li>
+<li class="fragment fade-out">Point 2 (Fade out)</li>
+<li class="fragment highlight-red">Point 3 (Highlight red)</li>
+<li class="fragment fade-in-then-out">Fade in, then out</li>
+<li class="fragment fade-up">Slide up while fading in</li>
+</ul>
+
+(But can be used with more than just bullets ...)
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -113,13 +121,54 @@ Who doesn't like math?!
 
 ---
 
-{{< slide template="green" >}}
+{{< slide transition="convex" >}}
 
 ## Slide Five
 
+That was a convex transition ...
+
 [//]: Speaker-Notes:
 {{% note %}}
-Nothing to see here, folks.
+Hey, a transition!
+{{% /note %}}
+
+---
+
+{{< slide transition="concave" >}}
+
+## Slide Six
+
+That was a concave transition ...
+
+[//]: Speaker-Notes:
+{{% note %}}
+Another transition!
+{{% /note %}}
+
+---
+
+{{< slide transition="fade" >}}
+
+## Slide Seven
+
+That was a fade transition ...
+
+[//]: Speaker-Notes:
+{{% note %}}
+Another transition!
+{{% /note %}}
+
+---
+
+{{< slide transition="zoom" >}}
+
+## Slide Eight
+
+That was a zoom transition ...
+
+[//]: Speaker-Notes:
+{{% note %}}
+Another transition!
 {{% /note %}}
 
 ---
