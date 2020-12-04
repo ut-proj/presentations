@@ -5,7 +5,7 @@ Use this when giving LFE presentations!
 
 ## Step 0
 
-Make sure you have GNU `make` and `docker` installed.
+Make sure you have `git`, GNU `make` and `docker` installed.
 
 ## Step 1
 
@@ -28,12 +28,13 @@ Then open up your browser to [localhost:1313](http://localhost:1313).
 
 ## Step 5 ... No, 3!
 
-Edit the slides! 
+Edit the slides:
 
-Just open up `./content/_index.md` and edit as needed for your LFE presentation!
+* Open up `./content/_index.md` and edit as needed for your LFE presentation.
+* If you've still got `make run` running, changes in the Markdown file will auto-load in your browser.
 
 
 ## Resources
 
-For examples of what you can do with your Markdown slides, see
+To see what you can do with your Markdown slides, see
 [these examples](https://github.com/dzello/reveal-hugo#demos).
