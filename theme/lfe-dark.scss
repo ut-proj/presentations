@@ -4,9 +4,9 @@
 @import "common";
 
 $backgroundColor: #222;
-
+$backgroundImage: url(LFE-logo-darker-greys-6-square-x3000.png);
 $mainColor: #fff;
-$headingColor: #fff;
+$headingColor: #99BF17;
 
 $linkColor: #42affa;
 $linkColorHover: lighten( $linkColor, 15% );
@@ -26,6 +26,10 @@ section.has-light-background {
 }
 
 div.highlight pre {
-	border-radius: 8px;
+	border-radius: $borderRadius;
 }
 
+section blockquote {
+    font-family: $auxFont;
+    border-radius: $borderRadius;
+}

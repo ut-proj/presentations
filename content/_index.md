@@ -15,7 +15,7 @@ Welcome to the demo presentation!
 
 ---
 
-## Slide Two
+## Slide 2wo
 
 Animating Bullets:
 
@@ -43,7 +43,9 @@ Pretty much on-point.
 
 [//]: WARNING:-Speaker-notes-don't-work-in-vertical-slides-:-(
 
-## Slide Three
+{{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
+
+## Slide 3ree
 
 Some highlighted LFE code:
 
@@ -63,7 +65,9 @@ Who doesn't like code?!
 
 ---
 
-## Slide Three.1
+{{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
+
+## Slide 3ree.1
 
 Let's do a deep dive, here ...
 
@@ -75,7 +79,9 @@ Deep dive notes.
 
 ---
 
-## Slide Three.2
+{{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
+
+## Slide 3ree.2
 
 So about this Ackermann thing ...
 
@@ -86,7 +92,9 @@ Lots more details.
 
 ---
 
-## Slide Three.3
+{{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
+
+## Slide 3ree.3
 
 Oh, and the lambda calculus!
 
@@ -103,7 +111,7 @@ Really starting to ramble, now ...
 
 ---
 
-## Slide Four
+## Slide 4our
 
 Some maths:
 
@@ -118,7 +126,7 @@ Who doesn't like math?!
 
 {{< slide transition="convex" >}}
 
-## Slide Five
+## Slide 5ive
 
 That was a convex transition ...
 
@@ -131,7 +139,7 @@ Hey, a transition!
 
 {{< slide transition="concave" >}}
 
-## Slide Six
+## Slide 6ix
 
 That was a concave transition ...
 
@@ -144,7 +152,7 @@ Another transition!
 
 {{< slide transition="fade" >}}
 
-## Slide Seven
+## Slide 7even
 
 That was a fade transition ...
 
@@ -157,9 +165,24 @@ Another transition!
 
 {{< slide transition="zoom" >}}
 
-## Slide Eight
+## Slide 8ight
 
 That was a zoom transition ...
+
+[//]: Speaker-Notes:
+{{% note %}}
+Another transition!
+{{% /note %}}
+
+---
+
+## Slide 9ine
+
+A quote:
+
+> "A thing. About stuff."
+
+-- by Someone
 
 [//]: Speaker-Notes:
 {{% note %}}
