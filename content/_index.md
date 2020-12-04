@@ -4,11 +4,6 @@ outputs = ["Reveal"]
 
 [logo]
 src = "LFE-logo-6-square.svg"
-
-[reveal_hugo.templates.green]
-background = "#424242"
-transition = "convex"
-
 +++
 
 # Example LFE Presentation
