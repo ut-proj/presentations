@@ -13,8 +13,8 @@ unsafe = true
 
 [markup.highlight]
 codeFences = true
-#style = "dracula"
-style = "monokailight"
+style = "dracula"
+#style = "monokailight"
 #style = "rrt"
 #style = "solarized-dark"
 #style = "solarized-dark256"
@@ -31,7 +31,7 @@ margin = 0.2
 highlight_theme = "atom-one-dark"
 #custom_theme = "lfe-dark.scss"
 #custom_theme = "lfe-light.scss"
-#custom_theme = "lfe-green.scss"
-custom_theme = "lfe-classic.scss"
+custom_theme = "lfe-green.scss"
+#custom_theme = "lfe-classic.scss"
 custom_theme_compile = true
 plugins = ["plugin/menu/menu.js"]

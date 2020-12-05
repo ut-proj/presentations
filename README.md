@@ -7,6 +7,7 @@ There is a live demo of this sample presentation here:
 * [LFE Dark Theme](https://lfe.io/slide-template/dark)
 * [LFE Light Theme](https://lfe.io/slide-template/light)
 * [LFE Green Theme](https://lfe.io/slide-template/green) (medium)
+* [LFE 'Classic' Theme](https://lfe.io/slide-template/classic)
 
 ## Step 0
 
@@ -48,7 +49,25 @@ to comment out the undwanted themes and leave uncommented the desired theme:
 #custom_theme = "lfe-dark.scss"
 custom_theme = "lfe-light.scss"
 #custom_theme = "lfe-green.scss"
+#custom_theme = "lfe-classic.scss"
 ```
+
+To get the classic logo, you will need to edit `./content/_index.md` and change the top of the file from this:
+
+``` toml
+[logo]
+src = "logo-v6.svg"
+```
+
+to this:
+
+``` toml
+[logo]
+src = "logo-v1.svg"
+```
+
+The 'classic' theme looks best if the `markup.highlight` style is changed to
+`monokailight`.
 
 After editing this file, you will need to stop the local server and re-run
 `make run`.
