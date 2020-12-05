@@ -3,7 +3,7 @@ title = "Example LFE Presentation"
 outputs = ["Reveal"]
 
 [logo]
-src = "LFE-logo-6-square.svg"
+src = "logo-v1-crop.svg"
 +++
 
 # Example LFE Presentation
