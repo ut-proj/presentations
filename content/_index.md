@@ -10,44 +10,103 @@ src = "logo-v6.svg"
 
 [//]: Speaker-Notes:
 {{% note %}}
-Welcome to the demo presentation!
 {{% /note %}}
 
 ---
 
-## Slide 2wo
+## Overview
 
-Animating Bullets:
-
-<ul>
-<li class="fragment">Point 1 (Fade in)</li>
-<li class="fragment fade-out">Point 2 (Fade out)</li>
-<li class="fragment highlight-red">Point 3 (Highlight red)</li>
-<li class="fragment fade-in-then-out">Fade in, then out</li>
-<li class="fragment fade-up">Slide up while fading in</li>
-</ul>
-
-(But can be used with more than just bullets ...)
+* Background, sound in the digital world, etc.
+* Homage: Joe Armstrong's explorations
+* Extempore vs. SuperCollider
+* Lisp Flavoured Erlang 2.0
+* Extempore in OTP
 
 [//]: Speaker-Notes:
 {{% note %}}
-I'd like to point out that these are really interesting points.
-Pretty much on-point.
 {{% /note %}}
 
 ---
 
-[//]: Begin-Vertical-Slides
+## Background (me)
 
-{{% section %}}
+<ul>
+<li class="fragment">4 yo - Messing about with Piano</li>
+<li class="fragment">8 yo - Started formal piano lessons, casual guitar </li>
+<li class="fragment">16 yo - Performed in a chamber music group</li>
+<li class="fragment">22 yo - Assembled a home recording studio</li>
+<li class="fragment">25 yo - Stopped playing music, replaced with physics / maths studies</li>
+<li class="fragment">48 yo - Started playing again</li>
+</ul>
 
-[//]: WARNING:-Speaker-notes-don't-work-in-vertical-slides-:-(
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Background (digital music)
+
+<ul>
+<li class="fragment">Early 1980s - Musical Interface Digital Interface (MIDI) standard created</li>
+<li class="fragment">1990s - Digital music recording took off</li>
+<li class="fragment">2000s - Recording on regular PCs</li>
+<li class="fragment">Early 2010s - Open Sound Control (OSC) standard created </li>
+<li class="fragment">2010s - Digital Audio Workstation (DAW) software, tube/analog emulation, live-coding</li>
+</ul>
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Erlang & Sound
+
+<ul>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+</ul>
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Extempore vs. SuperCollider
+
+<ul>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+</ul>
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
 
 {{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
 
-## Slide 3ree
+## LFE
 
-Some highlighted LFE code:
+What is it?
+
+```erlang
+ackermann(0, N) ->
+  N+1;
+ackermann(M, 0) ->
+  ackermann(M-1, 1);
+ackermann(M, N) when M > 0 andalso N > 0 ->
+  ackermann(M-1, ackermann(M, N-1)).
+```
 
 ```clj
 (defun ackermann
@@ -60,7 +119,6 @@ Some highlighted LFE code:
 
 [//]: Speaker-Notes:
 {{% note %}}
-Who doesn't like code?!
 {{% /note %}}
 
 ---
@@ -104,10 +162,6 @@ Alight, I think we're done here.
 {{% note %}}
 Really starting to ramble, now ...
 {{% /note %}}
-
-{{% /section %}}
-
-[//]: End-Vertical-Slides
 
 ---
 
