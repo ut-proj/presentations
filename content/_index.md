@@ -6,7 +6,7 @@ outputs = ["Reveal"]
 src = "logo-v6.svg"
 +++
 
-# Example LFE Presentation
+# Sound on BEAM: Music in the Land of Distributed Lisp
 
 [//]: Speaker-Notes:
 {{% note %}}
