@@ -21,6 +21,7 @@ src = "logo-v6.svg"
 * Extempore vs. SuperCollider
 * Lisp Flavoured Erlang 2.0
 * Extempore in OTP
+* Making Music
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -93,6 +94,54 @@ src = "logo-v6.svg"
 
 ---
 
+## undertone
+
+What is it good for?
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Architecture
+
+[diagram of connected pieces]
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Intermission
+
+<img src="Let's_All_Go_to_the_Lobby.jpg" style="width: 80%" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+
+---
+
+## Review
+
+* {{< fa check-square >}} Background, sound in the digital world, etc.
+* {{< fa check-square >}} Homage: Joe Armstrong's explorations
+* {{< fa check-square >}} Extempore vs. SuperCollider
+* Lisp Flavoured Erlang 2.0
+* Extempore in OTP
+* Making Music
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
 {{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
 
 ## LFE
@@ -113,134 +162,10 @@ ackermann(M, N) when M > 0 andalso N > 0 ->
   ((0 n) (+ n 1))
   ((m 0) (ackermann (- m 1) 1))
   ((m n) (ackermann (- m 1) (ackermann m (- n 1)))))
-  
-(io:format "~p~n" `(,thing))
 ```
 
 [//]: Speaker-Notes:
 {{% note %}}
-{{% /note %}}
-
----
-
-{{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
-
-## Slide 3ree.1
-
-Let's do a deep dive, here ...
-
-
-[//]: Speaker-Notes:
-{{% note %}}
-Deep dive notes.
-{{% /note %}}
-
----
-
-{{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
-
-## Slide 3ree.2
-
-So about this Ackermann thing ...
-
-[//]: Speaker-Notes:
-{{% note %}}
-Lots more details.
-{{% /note %}}
-
----
-
-{{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
-
-## Slide 3ree.3
-
-Oh, and the lambda calculus!
-
-Alight, I think we're done here.
-
-[//]: Speaker-Notes:
-{{% note %}}
-Really starting to ramble, now ...
-{{% /note %}}
-
----
-
-## Slide 4our
-
-Some maths:
-
-$$e^{i \pi} + 1 = 0$$
-
-[//]: Speaker-Notes:
-{{% note %}}
-Who doesn't like math?!
-{{% /note %}}
-
----
-
-{{< slide transition="convex" >}}
-
-## Slide 5ive
-
-That was a convex transition ...
-
-[//]: Speaker-Notes:
-{{% note %}}
-Hey, a transition!
-{{% /note %}}
-
----
-
-{{< slide transition="concave" >}}
-
-## Slide 6ix
-
-That was a concave transition ...
-
-[//]: Speaker-Notes:
-{{% note %}}
-Another transition!
-{{% /note %}}
-
----
-
-{{< slide transition="fade" >}}
-
-## Slide 7even
-
-That was a fade transition ...
-
-[//]: Speaker-Notes:
-{{% note %}}
-Another transition!
-{{% /note %}}
-
----
-
-{{< slide transition="zoom" >}}
-
-## Slide 8ight
-
-That was a zoom transition ...
-
-[//]: Speaker-Notes:
-{{% note %}}
-Another transition!
-{{% /note %}}
-
----
-
-## Slide 9ine
-
-A quote:
-
-> "A thing. About stuff."
-
--- by Someone
-
-[//]: Speaker-Notes:
-{{% note %}}
-Another transition!
 {{% /note %}}
 
 ---
@@ -265,10 +190,10 @@ You're a bunch of really loopy froods. What can I say?
 
 #### Contact
 
-* email: name@domain
-* Twits: @username
-* Slack: lfe.slack.com
-* LinkedIn: linkedin.com/in/NAME
+* {{< fa envelope >}} oubiwann@gmail.com
+* {{< fa fab twitter-square >}} [@oubiwann]()
+* {{< fa fab slack >}} [lfe.slack.com]()
+* {{< fa fab linkedin >}} [linkedin.com/in/oubiwann]()
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -277,12 +202,31 @@ Here's how you can reach me ...
 
 ---
 
-#### Resources
+#### LFE Resources
 
-* LFE site: https://lfe.io/
-* Mail list: http://groups.google.com/group/lisp-flavoured-erlang
-* LFE Twits: @ErlangLisp
-* Project site: https://github.com/ORG/NAME
+* {{< fa globe >}} https://lfe.io/
+* {{< fa fab github-square >}} https://github.com/rvirding/lfe
+* {{< fa users >}} http://groups.google.com/group/lisp-flavoured-erlang
+* {{< fa fab twitter-square >}} [@ErlangLisp]()
+
+[//]: Speaker-Notes:
+{{% note %}}
+Here's where stuff is ...
+{{% /note %}}
+
+---
+
+#### undertone Resources
+
+* {{< fa fab github-square >}} https://github.com/ut-proj/undertone
+* {{< fa users >}} http://groups.google.com/group/lfe-undertone
+* {{< fa fab twitter-square >}} [@lfeundertone]()
+* {{< fa fab instagram >}} https://www.instagram.com/lfeundertone/
+
+#### Bonus
+
+* {{< fa fab twitter-square >}} [@forgottentones]()
+* {{< fa fab soundcloud >}} https://soundcloud.com/forgotten-tones/tracks
 
 [//]: Speaker-Notes:
 {{% note %}}
