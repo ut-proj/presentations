@@ -35,3 +35,4 @@ custom_theme = "lfe-green.scss"
 #custom_theme = "lfe-classic.scss"
 custom_theme_compile = true
 plugins = ["plugin/menu/menu.js"]
+transition = "fade"
