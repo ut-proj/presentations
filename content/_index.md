@@ -192,8 +192,9 @@ You're a bunch of really loopy froods. What can I say?
 
 * {{< fa envelope >}} oubiwann@gmail.com
 * {{< fa fab twitter-square >}} [@oubiwann]()
-* {{< fa fab slack >}} [lfe.slack.com]()
 * {{< fa fab linkedin >}} [linkedin.com/in/oubiwann]()
+* {{< fa fab twitter-square >}} [@forgottentones]()
+* {{< fa fab soundcloud >}} https://soundcloud.com/forgotten-tones/tracks
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -206,6 +207,7 @@ Here's how you can reach me ...
 
 * {{< fa globe >}} https://lfe.io/
 * {{< fa fab github-square >}} https://github.com/rvirding/lfe
+* {{< fa fab slack >}} [lfe.slack.com]()
 * {{< fa users >}} http://groups.google.com/group/lisp-flavoured-erlang
 * {{< fa fab twitter-square >}} [@ErlangLisp]()
 
@@ -219,14 +221,12 @@ Here's where stuff is ...
 #### undertone Resources
 
 * {{< fa fab github-square >}} https://github.com/ut-proj/undertone
+* {{< fa fas book >}} https://undertone.lfe.io/book
+* {{< fa fab slack >}} [lfe.slack.com]() #algo-sound
 * {{< fa users >}} http://groups.google.com/group/lfe-undertone
 * {{< fa fab twitter-square >}} [@lfeundertone]()
 * {{< fa fab instagram >}} https://www.instagram.com/lfeundertone/
 
-#### Bonus
-
-* {{< fa fab twitter-square >}} [@forgottentones]()
-* {{< fa fab soundcloud >}} https://soundcloud.com/forgotten-tones/tracks
 
 [//]: Speaker-Notes:
 {{% note %}}
