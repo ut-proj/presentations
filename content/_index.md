@@ -1,5 +1,5 @@
 +++
-title = "Example LFE Presentation"
+title = "Sound on BEAM: Music in the Land of Distributed Lisp"
 outputs = ["Reveal"]
 
 [logo]
@@ -31,13 +31,59 @@ src = "logo-v6.svg"
 
 ## Background (me)
 
+* 4 yo - Messing about with Piano
+* 8 yo - Started formal piano lessons, casual guitar
+* 16 yo - Performed in a chamber music group
+* 22 yo - Assembled a home recording studio
+* 25 yo - Stopped playing music, replaced with physics / maths studies
+* 48 yo - Started playing again
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Terminology
+
+#### Algorithmic Composition
+
+=?=
+
+#### Generative Music
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Background (generative music)
+
 <ul>
-<li class="fragment">4 yo - Messing about with Piano</li>
-<li class="fragment">8 yo - Started formal piano lessons, casual guitar </li>
-<li class="fragment">16 yo - Performed in a chamber music group</li>
-<li class="fragment">22 yo - Assembled a home recording studio</li>
-<li class="fragment">25 yo - Stopped playing music, replaced with physics / maths studies</li>
-<li class="fragment">48 yo - Started playing again</li>
+<li class="fragment">1957 - Max Mathews MUSIC-1 on the IBM 704</li>
+<li class="fragment">(1958 - LISP, also on the IBM 704)</li>
+<li class="fragment">1962 - Sekine & Hayashi on the TOSBAC</li>
+<li class="fragment">1964 - Moog & Deutsch with prototype synthesizers; Don Buchla creates the first commercial analog sequencer on the Buchla 100</li>
+<li class="fragment">1969 - Max Mathews GROOVE on a Honeywell DDP-24; Peter Zinovieff MUSYS on PDP-8s</li>
+<li class="fragment">1971 - EMS releases first digital sequencer</li>
+</ul>
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Background (generative music)
+
+<ul>
+<li class="fragment">1957 - Max Mathews MUSIC-1 on the IBM 704</li>
+<li class="fragment">(1958 - LISP, also on the IBM 704)</li>
+<li class="fragment">1962 - Sekine & Hayashi on the TOSBAC</li>
+<li class="fragment">1964 - Moog & Deutsch with prototype synthesizers; Don Buchla creates the first commercial analog sequencer on the Buchla 100</li>
+<li class="fragment">1969 - Max Mathews GROOVE on a Honeywell DDP-24; Peter Zinovieff MUSYS on PDP-8s</li>
+<li class="fragment">1971 - EMS releases first digital sequencer</li>
 </ul>
 
 [//]: Speaker-Notes:
@@ -106,7 +152,31 @@ What is it good for?
 
 ## Architecture
 
-[diagram of connected pieces]
+<img src="arch/system-context.jpg" style="width: 100%" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Architecture: undertone
+
+* uses Erlang (starts up supervision tree, clients, servers)
+* talks to Extempore (bitstrings over TCP)
+* controls OSC servers (e.g., DAWs)
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Architecture: Extempore
+
+* talks to the OS / routes MIDI
+* signals routed to external devices
+* signals routed to MIDI in the DAW (e.g., software synthesizers)
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -116,7 +186,7 @@ What is it good for?
 
 ## Intermission
 
-<img src="Let's_All_Go_to_the_Lobby.jpg" style="width: 80%" />
+<img src="intermission/Let's_All_Go_to_the_Lobby.jpg" style="width: 80%" />
 
 [//]: Speaker-Notes:
 {{% note %}}
