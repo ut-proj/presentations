@@ -160,7 +160,9 @@ What is it good for?
 
 ---
 
-## Architecture: undertone
+## Architecture
+
+System context for undertone:
 
 * uses Erlang (starts up supervision tree, clients, servers)
 * talks to Extempore (bitstrings over TCP)
@@ -172,11 +174,40 @@ What is it good for?
 
 ---
 
-## Architecture: Extempore
+## Architecture
+
+System context for Extempore:
 
 * talks to the OS / routes MIDI
 * signals routed to external devices
 * signals routed to MIDI in the DAW (e.g., software synthesizers)
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Architecture
+
+<img src="arch/containers.jpg" style="width: 100%" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Architecture
+
+The undertone "container":
+
+* OTP app with supervisor and state server
+* State server for mananging session commands and system config
+* OSC clients for any OSC-enabled software running a UDP server
+* TCP client for long-running connections to Extempore
+* LFE REPL
+* Extempore REPL
 
 [//]: Speaker-Notes:
 {{% note %}}
