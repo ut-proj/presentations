@@ -13,7 +13,7 @@ src = "logo-v6.svg"
 Welcome to the talk!
 
 My name is Duncan McGreggor, and today I'm going to share with you a little
-of Lisp Flavoured Erlang, some Extempore, talk about music synthesis and
+of Lisp Flavoured Erlang, some Extempore, music synthesis and
 recording, and how they all come together in the undertone project.
 
 {{% /note %}}
@@ -52,7 +52,7 @@ recording, and how they all come together in the undertone project.
 ## Who am I?
 
 * Prinicpal software engineer
-* Life-long hacker (started at age 9 in '81)
+* Life-long hacker (started at age 9 in '81; never stopped)
 * Habbitual explorer
 * Core contributor to Robert Virding's Lisp Flavoured Erlang (LFE)
 
@@ -207,8 +207,18 @@ The undertone "container":
 
 ## Aside: Extempore vs SuperCollider
 
+<ul>
+<li class="fragment">Better UX in Extempore</li>
+<li class="fragment">Scheme vs Curly-brace/C-inspired scipring language</li>
+<li class="fragment">Musical orientation vs data / numbers / structs</li>
+
+</ul>
+
 [//]: Speaker-Notes:
 {{% note %}}
+My perception of a better user experience in Extempore admittedly may be due to the next bullet ...
+
+And the view that Extempore feels more musical is purely down to personal preference; but you may feel the same if you watch Andrew Sorensen create a dynamic musical piece in preconfigured scales and modes!
 {{% /note %}}
 
 ---
@@ -225,16 +235,22 @@ The undertone "container":
 
 [//]: Speaker-Notes:
 {{% note %}}
-Because once you can control your music devices programmatically, you can play them in new and different ways.
+In undertone, you're using code to issue commands to Extempore or your DAW or connected devices. These commands then let you play various musical sources.
+
+Comfort at this level then pushes you to do more, such as adjusting the sounds as they are being played -- another type of control.
+
+And when you can control your music like this, at nearly meta-levels, you can play in new and different ways.
+
+A very clear example of systems feedback :-) 
 {{% /note %}}
 
 ---
 
-## Personal interests in its use
+## Using for personal interest
 
 * Long, slow looping music in given keys, but random notes or intervals
 * Accompanyment for practice
-  * Jam sessions
+* Jam sessions
 * Endless, non-repeating background, ambient music
 
 
@@ -246,16 +262,6 @@ Since this is for fun, and the love of the art, I want to do it in a manner I wi
 
 ---
 
-## Intermission
-
-<img src="intermission/Let's_All_Go_to_the_Lobby.jpg" style="width: 80%" />
-
-[//]: Speaker-Notes:
-{{% note %}}
-{{% /note %}}
-
----
- 
 ## FP in an I/O World
 
 <img src="lol_clean_fp.jpg" />
@@ -279,6 +285,45 @@ Functional Programming meets musical composition:
 
 ---
 
+## Intermission
+
+<img src="intermission/Let's_All_Go_to_the_Lobby.jpg" style="width: 80%" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Review
+
+* {{< fa check-square >}} Introduction
+* {{< fa check-square >}} undertone, its architecture, and its uses
+* {{< fa check-square >}} Functional programming, mutable state, and I/O
+* {{< fa check-square >}} Intermission Q & A
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+{{% /note %}}
+
+---
+
+## Next
+
+* Sound synthesis as functional programming
+* Systems control for music
+* Demo
+* What's next for undertone
+* Final Q & A
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+{{% /note %}}
+
+---
+
 ## Synthesis as Functional Programming
 
 <img src="lol_beautiful_fp.jpg" />
@@ -291,31 +336,119 @@ Functional Programming meets musical composition:
 
 ## Synthesis as Functional Programming
 
+<img src="basicpatch.jpg" />
+
 [//]: Speaker-Notes:
 {{% note %}}
+The signal chain goes from left to right. MIDI provides the notes to the MIDI interface which produces pitch and gate signals. The pitch signal controls the Oscillator and the ramp waveform from the oscillator goes into the filter. The filter changes harmonics of the ramp wave and the filtered output goes on to the  Amplifier where the signals amplitude is controlled. Since gate needs to go to two places, it's patched through a Multiple which is just a patch bay. The gates then go to two envelope generators. One generator controls the filter and the other controls the amplitude. 
+{{% /note %}}
+
+---
+
+## Synthesis as Functional Programming
+
+<img src="synthpatch_1000.png" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+Here's a logical digram of the previous patch cable diagram.
+{{% /note %}}
+
+---
+
+## Synthesis as Functional Programming
+
+<img src="modular-v.jpg" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+This is a screenshot of one of the virtual syntesizers I use, showing a very simple patch.
+
+The same logic applies, with the various modules producing outputs that become the inputs of other modules.
+
+In fact, this is one of the patches that I'll be demo'ing in a bit.
+{{% /note %}}
+
+---
+
+## Synthesis as Functional Programming
+
+<img src="keith-emerson.jpg" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+Then there's taking the thing to its logical extreme ...
+
+which gives you Keith Emerson of Emerson, Lake, and Palmer.
+
+Oh, what a lucky man he was ...
 {{% /note %}}
 
 ---
 
 ## What Can undertone Do?
 
+<img src="kronos-lfe-undertone.jpg" /> <img src="model-d-lfe-undertone.jpg" />
+
 [//]: Speaker-Notes:
 {{% note %}}
+Control external MIDI devices.
+{{% /note %}}
+
+---
+
+## What Can undertone Do?
+
+<img src="ardour-daw.png" /> 
+
+[//]: Speaker-Notes:
+{{% note %}}
+Use its Open Sound Control to move faders and tweak plugins in Digital Audio Workstations that support OSC, such as this one. This is the Ardour DAW.
 {{% /note %}}
 
 ---
 
 ## Aside: Erlang & LFE
 
+An example: a recursive function using pattern-matching in the function heads.
+
+#### Erlang
+
+```erlang
+ackermann(0, N) ->
+  N+1;
+ackermann(M, 0) ->
+  ackermann(M-1, 1);
+ackermann(M, N) when M > 0 andalso N > 0 ->
+  ackermann(M-1, ackermann(M, N-1)).
+```
+
+#### LFE
+
+```clj
+(defun ackermann
+  ((0 n) (+ n 1))
+  ((m 0) (ackermann (- m 1) 1))
+  ((m n) (ackermann (- m 1) (ackermann m (- n 1)))))
+```
+
 [//]: Speaker-Notes:
 {{% note %}}
+Shortly, I'll be showing you some LFE code that will generate music.
+
+As such, it might make sense to provide you with a little insight, context, or compare / contrast with Erlang.
 {{% /note %}}
 
 ---
 
-## Demo
+## Demo Time
 
-Time for some space music!
+<img src="lol-space-music.jpg" />
+
+<p class="fragment">Now, for some space music!</p>
+<p class="fragment">(Well, it's not space music, per se ...)</p>
+<p class="fragment">(Proto-space, early electonic; AKA "Berlin School")</p>
+<p class="fragment"><a href="https://www.youtube.com/watch?v=OJ3kUK3NwXY">https://www.youtube.com/watch?v=OJ3kUK3NwXY</a></p>
 
 [//]: Speaker-Notes:
 {{% note %}}
