@@ -187,6 +187,17 @@ We can see a little more of what's going on under the bonnet.
 {{% /note %}}
 
 ---
+ 
+## Architecture
+
+<img src="arch/erlang-node-diagram.jpg" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+We can see a little more of what's going on under the bonnet.
+{{% /note %}}
+
+---
 
 ## Architecture
 
@@ -262,6 +273,133 @@ Since this is for fun, and the love of the art, I want to do it in a manner I wi
 
 ---
 
+{{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
+
+## Aside: Erlang & LFE
+
+An example: a recursive function using pattern-matching in the function heads.
+
+#### Erlang
+
+```erlang
+ackermann(0, N) ->
+  N+1;
+ackermann(M, 0) ->
+  ackermann(M-1, 1);
+ackermann(M, N) when M > 0 andalso N > 0 ->
+  ackermann(M-1, ackermann(M, N-1)).
+```
+
+#### LFE
+
+```clj
+(defun ackermann
+  ((0 n) (+ n 1))
+  ((m 0) (ackermann (- m 1) 1))
+  ((m n) (ackermann (- m 1) (ackermann m (- n 1)))))
+```
+
+[//]: Speaker-Notes:
+{{% note %}}
+Shortly, I'll be showing you some LFE code that will generate music.
+
+As such, it might make sense to provide you with a little insight, context, or compare / contrast with Erlang.
+{{% /note %}}
+
+---
+
+## FP in an I/O World
+
+Extempore provides deep and permissive control over its state, components, and systems.
+
+[//]: Speaker-Notes:
+{{% note %}}
+Extempore maintains the global state necessary to create music using XXX
+{{% /note %}}
+
+---
+
+## FP in an I/O World
+
+Extempore's xtlang:
+
+``` scheme
+(bind-func AudioBuffer_data_b64
+  (lambda (ab:AudioBuffer*)
+    (let ((b64size:i64 0)
+          (datsize:i64 (* (AudioBuffer_frames ab)
+                          (AudioBuffer_channels ab) 4)))
+      (String (base64_encode (cast (tref ab 4) i8*)
+                             datsize
+                             (ref b64size))))))
+```
+
+[//]: Speaker-Notes:
+{{% note %}}
+For deep access to Extempore and its data, a C-like Scheme extension is provided
+{{% /note %}}
+
+---
+
+## FP in an I/O World
+
+Extempore's Scheme:
+
+``` scheme
+(sys:load "libs/external/portmidi.xtm")
+(pm_initialize)
+(define *midi-out* (pm_create_output_stream 3))
+
+(define midi-loop
+  (lambda (beat dur)
+    (mplay *midi-out*
+           (random (list 36 43 48 51 60 60 60 67 70 74 75))
+           (random 60 80)
+           dur 0)
+    (callback (*metro* (+ beat (* .5 dur)))
+              'midi-loop
+              (+ beat dur)
+              dur)))
+
+(midi-loop (*metro* 'get-beat 4) 1/4)
+
+(define midi-loop
+  (lambda (beat dur) #t))
+```
+
+[//]: Speaker-Notes:
+{{% note %}}
+Most Extempore performers use the higher-level Scheme dialect, due to its musical orientation and conveniences.
+
+This code could serve as the basis for creating some interesting generative music. Note the actions being taken outside the context of functions, though: It is geared toward performance and quickly / easily manipulating global state.
+
+However, if I wanted to do something more complex, like use this as the basis for creating a step sequencer, with potentially many MIDI channels and / or devices, I'd be in for a lot of jumping around, tracking many sets of global variables for each sequencer I wanted to use, etc.
+{{% /note %}}
+
+---
+
+{{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
+
+## FP in an I/O World
+
+An LFE sequencer in undertone:
+
+``` lisp
+(set opts (xt.seq:midi-opts sequence-name
+                            device-name
+                            device-id
+                            midi-channel
+                            seq1
+                            pulse1
+                            beats-per-minute
+                            beats-per-measure
+                            note-timing))
+(xt.seq:start opts)
+(xt.midi:cc-ramp (mupd opts 'cc-code (cutoff-filter-1)) 15 40 5)
+(xt.seq:set-midi-notes! (mupd opts 'notes '(c3 c3 c4  c4 a#3 g3)))
+```
+
+---
 ## FP in an I/O World
 
 <img src="lol_clean_fp.jpg" />
@@ -269,14 +407,7 @@ Since this is for fun, and the love of the art, I want to do it in a manner I wi
 [//]: Speaker-Notes:
 {{% note %}}
 So why would someone go through all the effort to put a functional wrapper around so much I/O and global, mutable state?
-{{% /note %}}
 
----
-
-## FP in an I/O World
-
-[//]: Speaker-Notes:
-{{% note %}}
 Functional Programming meets musical composition:
 
 * better (more disciplined) control over the control global environment
@@ -408,39 +539,6 @@ Use its Open Sound Control to move faders and tweak plugins in Digital Audio Wor
 
 ---
 
-## Aside: Erlang & LFE
-
-An example: a recursive function using pattern-matching in the function heads.
-
-#### Erlang
-
-```erlang
-ackermann(0, N) ->
-  N+1;
-ackermann(M, 0) ->
-  ackermann(M-1, 1);
-ackermann(M, N) when M > 0 andalso N > 0 ->
-  ackermann(M-1, ackermann(M, N-1)).
-```
-
-#### LFE
-
-```clj
-(defun ackermann
-  ((0 n) (+ n 1))
-  ((m 0) (ackermann (- m 1) 1))
-  ((m n) (ackermann (- m 1) (ackermann m (- n 1)))))
-```
-
-[//]: Speaker-Notes:
-{{% note %}}
-Shortly, I'll be showing you some LFE code that will generate music.
-
-As such, it might make sense to provide you with a little insight, context, or compare / contrast with Erlang.
-{{% /note %}}
-
----
-
 ## Demo Time
 
 <img src="lol-space-music.jpg" />
@@ -538,10 +636,7 @@ Here's where stuff is ...
 * Making Music
 
 [//]: Speaker-Notes:
-{{% note %}}
-{{% /note %}}
 
----
 
 ## Background (me)
 
@@ -553,10 +648,7 @@ Here's where stuff is ...
 * 48 yo - Started playing again
 
 [//]: Speaker-Notes:
-{{% note %}}
-{{% /note %}}
 
----
 
 ## Terminology
 
@@ -567,10 +659,7 @@ Here's where stuff is ...
 #### Generative Music
 
 [//]: Speaker-Notes:
-{{% note %}}
-{{% /note %}}
 
----
 
 ## Background (generative music)
 
@@ -584,10 +673,7 @@ Here's where stuff is ...
 </ul>
 
 [//]: Speaker-Notes:
-{{% note %}}
-{{% /note %}}
 
----
 
 ## Background (generative music)
 
@@ -601,10 +687,7 @@ Here's where stuff is ...
 </ul>
 
 [//]: Speaker-Notes:
-{{% note %}}
-{{% /note %}}
 
----
 
 ## Background (digital music)
 
@@ -617,10 +700,7 @@ Here's where stuff is ...
 </ul>
 
 [//]: Speaker-Notes:
-{{% note %}}
-{{% /note %}}
 
----
 
 ## Erlang & Sound
 
@@ -633,10 +713,7 @@ Here's where stuff is ...
 </ul>
 
 [//]: Speaker-Notes:
-{{% note %}}
-{{% /note %}}
 
----
 
 ## Extempore vs. SuperCollider
 
@@ -649,23 +726,14 @@ Here's where stuff is ...
 </ul>
 
 [//]: Speaker-Notes:
-{{% note %}}
-{{% /note %}}
 
----
 
 ## undertone
 
 What is it good for?
 
 [//]: Speaker-Notes:
-{{% note %}}
-{{% /note %}}
 
----
-
-
----
 
 ## Review
 
@@ -677,10 +745,7 @@ What is it good for?
 * Making Music
 
 [//]: Speaker-Notes:
-{{% note %}}
-{{% /note %}}
 
----
 
 {{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
 
@@ -705,25 +770,15 @@ ackermann(M, N) when M > 0 andalso N > 0 ->
 ```
 
 [//]: Speaker-Notes:
-{{% note %}}
-{{% /note %}}
 
----
 
 ## Don't Panic
 
 [//]: Speaker-Notes:
-{{% note %}}
-And don't forget your towel when you leave.
-{{% /note %}}
 
----
 
 ## Q & A Time
 
 [//]: Speaker-Notes:
-{{% note %}}
-You're a bunch of really loopy froods. What can I say?
-{{% /note %}}
 
 {{% /note %}}
