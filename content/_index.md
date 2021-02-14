@@ -382,7 +382,15 @@ However, if I wanted to do something more complex, like use this as the basis fo
 
 ## FP in an I/O World
 
-An LFE sequencer in undertone:
+An LFE sequencer in undertone?
+
+<img src="Moog-modular-sequencer.jpg" />
+
+---
+
+## FP in an I/O World
+
+Yes!
 
 ``` lisp
 (set opts (xt.seq:midi-opts sequence-name
@@ -400,6 +408,7 @@ An LFE sequencer in undertone:
 ```
 
 ---
+
 ## FP in an I/O World
 
 <img src="lol_clean_fp.jpg" />
@@ -608,7 +617,7 @@ Buy it! http://landoflisp.com/
 
 ---
 
-## Q & A
+## Closing Q & A
 
 [//]: Speaker-Notes:
 {{% note %}}
