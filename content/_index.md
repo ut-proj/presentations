@@ -543,10 +543,43 @@ Use its Open Sound Control to move faders and tweak plugins in Digital Audio Wor
 
 <img src="lol-space-music.jpg" />
 
-<p class="fragment">Now, for some space music!</p>
-<p class="fragment">(Well, it's not space music, per se ...)</p>
-<p class="fragment">(Proto-space, early electonic; AKA "Berlin School")</p>
-<p class="fragment"><a href="https://www.youtube.com/watch?v=OJ3kUK3NwXY">https://www.youtube.com/watch?v=OJ3kUK3NwXY</a></p>
+Now, for some space music!
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Demo Time
+
+<img src="lol-space-music.jpg" />
+
+1. Creating a "space orchestra" with note transformations and multiple channels: see [teaser video](https://www.youtube.com/watch?v=cfpAsvHW2i4&t=56s)
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Demo Time
+
+<img src="lol-space-music.jpg" />
+
+2. Using `xt.midi:cc-ramp` to simulate turning the knobs on an analog synth: Dallas/Fort Worth BEAMers Meetup demo
+
+[//]: Speaker-Notes:
+{{% note %}}
+{{% /note %}}
+
+---
+
+## Demo Time
+
+<img src="lol-space-music.jpg" />
+
+3. Towards generative music with Markov chains and chords: [HD video + sound]() (posting on Twitter now ...)
 
 [//]: Speaker-Notes:
 {{% note %}}
