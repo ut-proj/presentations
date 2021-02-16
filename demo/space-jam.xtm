@@ -1,32 +1,53 @@
 ;;;; An undertone / Extempore demonstration of a multi-track, Moog modular
 ;;;; performance highlighting:
+;;;;
 ;;;; * Generative music with Markov chains
 ;;;; * Conditional changes in volume and key
-;;;; * Sinusoidal progression changes
-;;;; *
+;;;; * Progression changes via sinusoidal time
+;;;; * The LFE sequencer
+;;;; * Both software AND hardware synthesis
 ;;;;
-;;;; Steps:
-;;;; * Everything down except for SFX
-;;;; * Bring PADS up to -36
-;;;; * Bring ORGAN up to -24
-;;;; * Bring PADS up to -30
-;;;; * Bring ORGAN up to -12
-;;;; * Bring SEQS up to -12
-;;;; * Bring ORGAN up to -6
-;;;; * Bring SEQS up to -6 
-;;;; * BEHRINGER: Bring up VOL to match
+;;;; Demo steps / script:
+;;;;
+;;;; * LFE: (clear)
+;;;; * LFE: (undertone.repl.extempore:start)
+;;;; * DAW: Everything down except for SFX
+;;;; * MOOG & BEHRINGER: Set to initial sound
+;;;; * BEHRINGER: Volume at 0
+;;;; * QUICKTIME: Begin recording
+;;;;
+;;;; * LFE: Paste code
+;;;; * LFE: Start progression
+;;;;
+;;;; * PADS: Bring up to -36
+;;;; * ORGAN: Bring up to -24
+;;;; * TERINAL: Show Markov transitions logged output for chords
+;;;; * BEHRINGER: Bring volume to 2
+;;;; * ORGAN: Bring up to -12
+;;;;
+;;;; * PADS: Bring down to -38
+;;;; * EMACS: Show SEQ code
+;;;; * DAW: Show MOOG plugin keyboard playing
+;;;; * SEQS: Bring up to 0
+;;;;
+;;;; * PADS: Bring down to -38
+;;;; * BEHRINGER: Bring up VOL to 12 'o clock
+;;;;
+;;;; * DAW: Open MOOG
 ;;;; * MOOG: Adjust FILTER 1 FREQ up
-;;;; * Bring SEQS up to 0
-;;;; * MOOG: Adjust FILTER 1 FREQ up
-;;;; * BEHRINGER: Bring up CUTOFF and CONTOUR
-;;;; * Switch screen to DAW
-;;;; * PADS: lower vol
-;;;; * MOOG & BEHRINGER: Bring down FREQ, CUTOFF and CONTOUR
-;;;; * SEQS: lower vol
-;;;; * ORGAN: lower vol
+;;;; * BEHRINGER: Bring down VOL to 9 'o clock
+;;;; * MOOG: Bring down FREQ
+;;;; * BEHRINGER: Bring down VOL to 0
+;;;;
+;;;; * LFE: (define minor-dur 10000)
+;;;; * SEQS: Bring volume to -2
+;;;; * PADS: Bring volume to -40
+;;;; * ORGAN: Bring volume to -24
+;;;; * SEQS: Bring volume to -6
 
 ;;; Setup from LFE
 ;;;
+(clear)
 (undertone.repl.extempore:start)
 (load "/Users/oubiwann/lab/lfe/lambda-days-2021/demo/init.xtm")
 
@@ -34,13 +55,13 @@
 ;;;
 (sys:load "/Users/oubiwann/lab/lfe/lambda-days-2021/demo/init.xtm")
 
-(pm_print_devices)
-
+;; Setup SW synths
 (define primary-midi-device-id 3)
-(define hw-midi-device-id 5)
 (define *midiout* (pm_create_output_stream primary-midi-device-id))
-(define *hwmidiout* (pm_create_output_stream hw-midi-device-id))
 
+;; Setup HW synths
+(define hw-midi-device-id 5)
+(define *hwmidiout* (pm_create_output_stream hw-midi-device-id))
 (define hw-channel 0)
 
 (define space-org-channel 0)
@@ -51,6 +72,8 @@
 (define space-pad-vol 60)
 (define space-pad-npc 2)
 
+(*metro* 'set-tempo 84)
+
 (define beats-per-measure 2)
 (define note-timing 4)
 (define low c2)
@@ -59,6 +82,8 @@
 (define key c0)
 (define major '^)
 (define minor '-)
+(define minor-dur 72)
+(define major-dur 48)
 (define mode minor)
 (define primary-degrees '(i v))
 
@@ -72,41 +97,34 @@
   (set! key c0)
   (define seq-notes-main seq-notes-minor))
 
-
 ;; Allowed transitions
 (define trans-1 '((i iv)
                   (iv i)
-                  (v i)
                   (vi iv)
                   (viio i)))
 
 (define trans-2 '((i iv vi)
-                  (iv i v)
-                  (v i vi)
+                  (iv i)
                   (vi iv)
                   (viio i)))
 
 (define trans-3 '((i iv vi)
-                  (iv i v viio)
-                  (v i vi)
+                  (iv i viio)
                   (vi iv)
-                  (viio i v)))
+                  (viio i)))
 
 (define trans-4 '((i iv vi)
-                  (ii v viio)
-                  (iv i v viio)
-                  (v i vi)
+                  (ii viio)
+                  (iv i viio)
                   (vi iv)
-                  (viio i v)))
+                  (viio i)))
 
-(define minor-dur 72)
-(define major-dur 48)
+;;(define seq-notes-major (list eb3 bb3 ab3 eb4 g3 c4 g3 bb3))
+;;(define seq-notes-main seq-notes-major)
 
 (define sequencer-running? #f)
 (define seq-channel 2)
-(define seq-notes-major (list eb3 bb3 ab3 eb4 g3 c4 g3 bb3))
 (define seq-notes-major (list eb3 eb3 bb3 ab3 eb4 ab3 c4 bb3))
-(define seq-notes-main seq-notes-major)
 (define seq-notes-minor (list c3 c3 g3 eb3 c4 eb3 g3 eb3))
 (define seq-notes-main seq-notes-minor)
 (define seq-notes seq-notes-minor)
@@ -122,7 +140,7 @@
            dur
            seq-channel)
     (mplay *hwmidiout*
-aa           (car nlst)
+           (car nlst)
            (* vol-mod seq-vol)
            dur
            hw-channel)
@@ -170,9 +188,6 @@ aa           (car nlst)
           (cond ((member d '(i vi))
                  (set! seq-vol 100)
                  (set! seq-notes seq-notes-main))
-                ((equal? d 'v)
-                 (set! seq-vol 50)
-                 (pc:make-chord (- l 12) (- h 24) 1 (pc:diatonic k m d)))
                 ((equal? d 'viio)
                  (set! seq-vol 40)
                  (pc:make-chord (- l 12) (- h 24) 2 (pc:diatonic k m d)))
@@ -195,7 +210,7 @@ aa           (car nlst)
                          adj-dur
                          space-pad-channel))
                 space-pad-chord)
-      ;; Allow different transitions at different times
+      ;; Allow different chord transitions at different times
       (let* ((s (sinr 0 1 0.005))
              (trans (cond ((>= s 0.3) trans-1)
                           ((> s -0.7) trans-2)
@@ -233,10 +248,9 @@ aa           (car nlst)
 (define progression
   (lambda (beat dur total-dur degree low high) #t))
 
-(sequencer (*metro* 'get-beat beats-per-measure) seq-notes-timing seq-notes 1.0)
-
 ;; Stop the sequencer
 (define sequencer
   (lambda (beat dur nlst) #t))
 
+;; If restarting, be sure to reset the sequencer flag:
 (set! sequencer-running? #f)
