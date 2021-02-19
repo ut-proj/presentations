@@ -3,19 +3,19 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>http://example.org/categories/</loc>
+    <loc>https://undertone.lfe.io/presentations/lambda-days-2021/categories/</loc>
   </url>
   
   <url>
-    <loc>http://example.org/</loc>
+    <loc>https://undertone.lfe.io/presentations/lambda-days-2021/</loc>
   </url>
   
   <url>
-    <loc>http://example.org/index-v2/</loc>
+    <loc>https://undertone.lfe.io/presentations/lambda-days-2021/index-v2/</loc>
   </url>
   
   <url>
-    <loc>http://example.org/tags/</loc>
+    <loc>https://undertone.lfe.io/presentations/lambda-days-2021/tags/</loc>
   </url>
   
 </urlset>
