@@ -15,9 +15,6 @@ default: run
 img:
 	@docker build -t $(TAG) .
 
-init-demo:
-	@git submodule add -b demo `git remote get-url --push origin` demo
-
 run: img
 	@docker run -it -p $(PORT):$(PORT) \
 	-v $(CONTENT_DIR):/src/content \
