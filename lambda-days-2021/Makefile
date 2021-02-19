@@ -29,6 +29,7 @@ run: img
 build: img
 	@docker run \
 	-v $(CONTENT_DIR):/src/content \
+	-v $(THEME_DIR):/src/assets \
 	-v $(OUTPUT_DIR):/src/public \
 	$(TAG)
 
@@ -36,7 +37,7 @@ pdf: build
 	@docker run --rm -t -v $(PDF_DIR):/slides $(PDF_GEN_TAG) \
 	$(OUTPUT_DIR)/index.html $(PDF_DIR)/presentation.pdf
 
-help: build
+help: img
 	@docker run -it -p $(PORT):$(PORT) -v $(CONTENT_DIR):/src/content $(TAG) \
 	help
 
