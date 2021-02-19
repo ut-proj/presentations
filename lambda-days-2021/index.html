@@ -1,0 +1,1118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+	<meta name="generator" content="Hugo 0.78.2" />
+    <meta charset="utf-8">
+<title>Sound on BEAM: Music in the Land of Distributed Lisp</title>
+
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/reveal-js/css/reset.css">
+<link rel="stylesheet" href="/reveal-js/css/reveal.css">
+  <link rel="stylesheet" href="/_.min.041e2ec9eab015f2f8f30d69a0e80448c53de116ae5dfa6252639b143a2532a8.css" id="theme"><link rel="stylesheet" href="/highlight-js/atom-one-dark.min.css">
+    <link rel="stylesheet" href="/plugin/menu/menu.css">
+<script type="text/javascript" async
+        src="/plugin/menu/menu.js">
+</script>
+<script type="text/javascript" id="MathJax-script" async
+  src="/js/tex-svg-full.js">
+</script>
+
+  </head>
+  <body>
+    
+    <style>
+      #logo {
+        position: absolute;
+        top: 1%;
+        left: 1%;
+        width: 15%;
+      }
+    </style>
+    <img id="logo" src="logo-v6.svg" alt="">
+    
+    <div class="reveal">
+      <div class="slides">
+  
+
+    <section><h1 id="sound-on-beam-music-in-the-land-of-distributed-lisp">Sound on BEAM: Music in the Land of Distributed Lisp</h1>
+
+
+
+<aside class="notes"><p>Hello, and welcome to my talk!</p>
+<p>My name is Duncan McGreggor, and today I&rsquo;m going to share with you a little
+of Lisp Flavoured Erlang, some Extempore, music synthesis and
+recording, and how they all come together in the undertone project.</p>
+</aside>
+</section><section>
+<h2 id="overview">Overview</h2>
+<ul>
+<li>Introduction</li>
+<li>undertone</li>
+<li>Demo</li>
+<li>Architecture</li>
+<li>Use Cases</li>
+<li>Languages</li>
+<li>FP, Global/Mutable State, and I/O</li>
+<li>Sound synthesis as functional programming</li>
+<li>Systems control for music</li>
+<li>What&rsquo;s next for undertone</li>
+<li>Final Q &amp; A</li>
+</ul>
+
+
+
+<aside class="notes"><p>These are the topics I hope to cover.</p>
+<p>This is a lot, but we should get through most of it!</p>
+</aside>
+</section><section>
+<h2 id="who-am-i">Who am I?</h2>
+<ul>
+<li>Prinicpal software engineer</li>
+<li>Life-long hacker (started at age 9 in &lsquo;81; never stopped)</li>
+<li>Habbitual explorer</li>
+<li>Core contributor to Robert Virding&rsquo;s Lisp Flavoured Erlang (LFE)</li>
+</ul>
+
+
+
+<aside class="notes"><p>And here&rsquo;s a little bit about me &hellip;</p>
+<p>&hellip; but we can skip past that ;-)</p>
+</aside>
+</section><section>
+<h2 id="who-am-i-1">Who am I?</h2>
+<ul>
+<li>4 yo - Messing about with Piano</li>
+<li>9 or 10 yo - Formal piano lessons, casual guitar</li>
+<li>14 yo - First synthesizer (analog Korg PolySix)</li>
+<li>16 yo - Performed in a chamber music group</li>
+<li>22 yo - Assembled a home recording studio</li>
+<li>25 yo - Stopped playing music, replaced with physics / maths studies &hellip; then career</li>
+<li>48 yo - Started playing again</li>
+</ul>
+
+
+
+<aside class="notes"><p>&hellip; and some snippets from my brushes with music, most of which is in the relatively distant past.</p>
+<p>In point of fact, the last musical performance I gave was as the pianist in a chamber music quartet when I was 17.</p>
+</aside>
+</section><section>
+<h2 id="re-entering-the-musical-world">Re-entering the Musical World</h2>
+<p><img src="dm_as_1.jpg" /></p>
+
+
+
+<aside class="notes"><p>Between then and 2014, when I was 42, I met Andrew Sorensen pictured here after his Extempore live-coding performance at OSCON.</p>
+<p>(And yes, that dude with the short hair is me ;-))</p>
+<p>Andrew and I talked about live coding, my interest in using LFE/OTP along with Extempore, and if I remember correctly, he mentioned conversations that he and Joe Armstrong had about Extempore and Erlang and some potential collaboration.</p>
+</aside>
+</section><section>
+<h2 id="re-entering-the-musical-world-1">Re-entering the Musical World</h2>
+<p><img src="dm_as_2.jpg" /></p>
+
+
+
+<aside class="notes"><p>He then shared his performance code with me, I created a variation, blogged about it, and thus began a slow-reignition of my passion for music.</p>
+<p>As a side note: A few years ago, I picked up the guitar again, and more recently have been relearning piano and keyboards. I&rsquo;m studying music theory, and even taking some online music courses. It has been fantastic and much needed outlet.</p>
+</aside>
+</section><section>
+<h2 id="then--nothing">Then &hellip; Nothing</h2>
+
+
+
+<aside class="notes"><p>Later in chatting with members of the LFE community, we talked briefly about exploring sound synthesis libraries in LFE, but none of us had the time or interest to take things much further.</p>
+<p>Then, years later, along comes this gem of a blog post from Erlang Solutions &hellip;</p>
+</aside>
+</section><section>
+<h2 id="but">But!</h2>
+<p><img src="sound_of_erlang.jpg" /></p>
+
+
+
+<aside class="notes"><p>&hellip; by Aleksander Lisiecki</p>
+<p>and upon seeing this, I immediately &hellip;</p>
+</aside>
+</section><section>
+<h2 id="and-">And &hellip;</h2>
+<p><img src="sound-of-lfe1.jpg" width="80%" /></p>
+
+
+
+<aside class="notes"><p>&hellip; did this &hellip;!</p>
+</aside>
+</section><section>
+<h2 id="and">And?</h2>
+<p><img src="sound-of-lfe2.jpg" width="80%" /></p>
+
+
+
+<aside class="notes"><p>&hellip; and this :-)</p>
+<p>In essence, porting the code in that blog post to LFE.</p>
+</aside>
+</section><section>
+<h2 id="wherefore-undertone">Wherefore undertone?</h2>
+<p><img src="undertone-github.jpg" width="80%" /></p>
+
+
+
+<aside class="notes"><p>The path from there to undertone was mostly straight-forward: I wanted to do more than generate tones. I wanted to control synthsizers and run services &hellip; in short, make music. I read everything I could on Erlang and music, retracing Joe Armstrong&rsquo;s steps from the mid-2000s up until a few short years ago.</p>
+<p>I implemented basic support for SuperCollider, upon which much of his work depended, but was frustrated by the lack of musicality in that particular system. At which point I returned to Extempore, and began integrating it into undertone as well.</p>
+</aside>
+</section><section>
+<h2 id="what-is-undertone">What is undertone?</h2>
+<p><img src="teaser_video_daw.jpg" /></p>
+
+
+
+<aside class="notes"><p>I added enough functionality that I could generate a demo song with 9 seperate tracks of synthesizer being played. All of those were created using undertone. The end result was featured in the Lambda Days &ldquo;teaser&rdquo; video for this talk.</p>
+<p>There&rsquo;s a lot to unpack in that work, and a brief overview of the architecture would go a long way toward giving you a good idea what undetone really is.</p>
+<p>But before that &hellip;</p>
+</aside>
+</section><section>
+<h2 id="demo-time">Demo Time</h2>
+<p><img src="lol-space-music.jpg" /></p>
+<p>Let&rsquo;s have some space music!</p>
+
+
+
+<aside class="notes"><p>How about some music?</p>
+</aside>
+</section><section>
+<h2 id="demo-time-1">Demo Time</h2>
+<p><img src="lol-space-music.jpg" /></p>
+<ol>
+<li>Creating a &ldquo;space orchestra&rdquo; with note transformations and multiple channels: see <a href="https://www.youtube.com/watch?v=cfpAsvHW2i4&amp;t=56s">the teaser video</a></li>
+</ol>
+
+
+
+<aside class="notes"><p>The demo I had originally planned on showing you would have been a presentation of the code that was used to create the music in that teaser video.</p>
+<p>Honestly, though, that&rsquo;s pretty boring: some manually defined chord definitions, some elementary transformations of lists using map and fold, etc.</p>
+</aside>
+</section><section>
+<h2 id="demo-time-2">Demo Time</h2>
+<p><img src="lol-space-music.jpg" /></p>
+<ol start="2">
+<li>Using <code>xt.midi:cc-ramp</code> to simulate turning the knobs on an analog synth: see <a href="https://www.youtube.com/watch?v=DI3UcPAdayo">the Dallas/Fort Worth BEAMers Meetup demo</a></li>
+</ol>
+
+
+
+<aside class="notes"><p>Then I decided to add support for MIDI control codes, so I could show you how LFE can control analog synthesizers like the classic minimoog, radically changing the sounds even without adjusting the notes.</p>
+<p>After updating undertone for this and creating a demo, I presented to the DFW Beamers &hellip; and decided to also include it in today&rsquo;s talk as a bonus. Here it is:</p>
+<p>But, I still wasn&rsquo;t satisfied &hellip;</p>
+</aside>
+</section><section>
+<h2 id="demo-time-3">Demo Time</h2>
+<p><img src="lol-space-music.jpg" /></p>
+<ol start="3">
+<li>Towards generative music with Markov chains and chords: <a href="">HD video + sound</a> (posting on Twitter now &hellip;)</li>
+</ol>
+
+
+
+<aside class="notes"><p>I had promised to show conference attendees something with generative music, and these demos kept missing that mark. So I created a new piece with new code, and that&rsquo;s what I&rsquo;m going to show you next :-)</p>
+</aside>
+</section><section>
+<h2 id="architecture">Architecture</h2>
+<p><img src="arch/system-context.jpg" style="width: 100%" /></p>
+
+
+
+<aside class="notes"><p>So, here&rsquo;s a view of the system you just saw demoed, represented with the C4 style of architectural diagrams. Don&rsquo;t worry though: we&rsquo;ll just look at two of the four ;-)</p>
+<p>Lest you get the wrong idea, only a small portion of this diagram is undertone.</p>
+<p>And I should point out that the hard work of sending MIDI messages (or playing its own sounds, as the case may be), is all done by Extempore &ndash; Andrew Sorensen&rsquo;s open source live-coding software.</p>
+</aside>
+</section><section>
+<h2 id="architecture-1">Architecture</h2>
+<p>System context for Extempore:</p>
+<ul>
+<li>talks to the OS / routes MIDI</li>
+<li>signals routed to external devices</li>
+<li>also routed to MIDI in the DAW (e.g., software synthesizers)</li>
+</ul>
+
+
+
+<aside class="notes"><p>Extempore runs a TCP server to which we can connect, and then from there, gain access to the operating system&rsquo;s audio layer, MIDI devices, and the like.</p>
+</aside>
+</section><section>
+<h2 id="architecture-2">Architecture</h2>
+<p>System context for undertone:</p>
+<ul>
+<li>uses Erlang (starts up supervision tree, clients, servers)</li>
+<li>talks to Extempore (bitstrings over TCP)</li>
+<li>controls OSC servers (e.g., DAWs)</li>
+</ul>
+
+
+
+<aside class="notes"><p>undertone spawns Extmpore as a managed OS process, starts a TCP client, and optionally starts Open Sound Control clients and servers.</p>
+<p>All of this gets stuffed into a supervision tree that will restart these components, should you push them beyond their limits &ndash; without crashing the Erlang VM.</p>
+</aside>
+</section><section>
+<h2 id="architecture-3">Architecture</h2>
+<p><img src="arch/system-context.jpg" style="width: 100%" /></p>
+
+
+
+<aside class="notes"><p>Now, if we zoom in &hellip;</p>
+</aside>
+</section>
+
+<section data-noprocess data-shortcode-slide
+      data-transition="none">
+  
+<h2 id="architecture-4">Architecture</h2>
+<p><img src="arch/system-context-zoom.jpg" style="width: 100%" /></p>
+
+
+
+<aside class="notes"><p>&hellip; on undertone&rsquo;s purple box, or &ldquo;container&rdquo; &hellip;</p>
+</aside>
+</section><section>
+<h2 id="architecture-5">Architecture</h2>
+<p><img src="arch/containers.jpg" style="width: 100%" /></p>
+
+
+
+<aside class="notes"><p>We can see a little more of what&rsquo;s going on under the bonnet.</p>
+<p>The &ldquo;container&rdquo; view of undertone shows which components are connected to each other and how.</p>
+</aside>
+</section>
+
+<section data-noprocess data-shortcode-slide
+      data-transition="none">
+  
+<h2 id="architecture-6">Architecture</h2>
+<p><img src="arch/containers.jpg" style="width: 100%" /></p>
+
+
+
+<aside class="notes"><p>The grey box in the upper left is where the first demo took place. All the commands entered there were sent via the undertone-managed TCP client to the Extempore compiler server.</p>
+</aside>
+</section>
+
+<section data-noprocess data-shortcode-slide
+      data-transition="none">
+  
+<h2 id="architecture-7">Architecture</h2>
+<p><img src="arch/containers.jpg" style="width: 100%" /></p>
+
+
+
+<aside class="notes"><p>The grey box in the middle-right is what you saw when looking at the terminal in the second demo:</p>
+<ul>
+<li>where, after pasting all the Extempore code</li>
+<li>we viewed the indexed history of the entered Scheme forms</li>
+<li>and where all the logging output was</li>
+</ul>
+<p>That REPL &ndash; while written in LFE &ndash; has its own commands separate from the LFE REPL.</p>
+</aside>
+</section>
+
+<section data-noprocess data-shortcode-slide
+      data-transition="none">
+  
+<h2 id="architecture-8">Architecture</h2>
+<p><img src="arch/containers.jpg" style="width: 100%" /></p>
+
+
+
+<aside class="notes"><p>Extempore proper, doesn&rsquo;t actually have a REPL of its own &ndash; the standard way of interacting with it is by means of a text editor such as Emacs that&rsquo;s capable of sending Scheme forms to the Extempore TCP server for on-the-fly compilation.</p>
+<p>In short: everything within the dashed purple border here has been written in LFE.</p>
+</aside>
+</section>
+
+<section data-noprocess data-shortcode-slide
+      data-transition="none">
+  
+<h2 id="architecture-9">Architecture</h2>
+<p><img src="arch/containers.jpg" style="width: 100%" /></p>
+
+
+
+<aside class="notes"><p>Also, note that the blue &ldquo;Extempore&rdquo; box actually represents LFE spawning the Extempore processes and manaing the spawned port and associated state in a gen_server.</p>
+</aside>
+</section><section>
+<h2 id="architecture-10">Architecture</h2>
+<p>The undertone &ldquo;container&rdquo;:</p>
+<ul>
+<li>OTP app with supervisor and state server</li>
+<li>State server for mananging session commands and system config</li>
+<li>OSC clients for any OSC-enabled software running a UDP server</li>
+<li>TCP client for long-running connections to Extempore</li>
+<li>LFE REPL</li>
+<li>Extempore REPL</li>
+</ul>
+
+
+
+<aside class="notes"><p>And here&rsquo;s a quick textual overview of what we just covered &hellip;</p>
+</aside>
+</section><section>
+<h2 id="what-can-undertone-do">What Can undertone Do?</h2>
+<p><img src="ardour-daw.png" /></p>
+
+
+
+<aside class="notes"><p>In undertone, you can run functions that control a Digital Audio Workstation like the one pictured here, moving faders, endabling tracks, recording, looping &ndash; the list goes on and on.</p>
+</aside>
+</section><section>
+<h2 id="what-can-undertone-do-1">What Can undertone Do?</h2>
+<p><img src="kronos-lfe-undertone.jpg" /> <img src="model-d-lfe-undertone.jpg" /></p>
+
+
+
+<aside class="notes"><p>You can not only control software devices like the Moog modular synth I showed in the demo, but you
+can also control physical devices like these &ndash; which, by the way, were genereating music written in LFE when the pictures were taken!</p>
+<p>On the left is a Korg Kronos, and the right shows a desktop analog synth, a minimoog clone by Behringer.</p>
+</aside>
+</section><section>
+<h2 id="what-can-undertone-do-2">What Can undertone Do?</h2>
+<ul>
+<li>Long, slow looping music in given keys, but random notes or intervals</li>
+<li>Accompanyment for practice</li>
+<li>Jam sessions</li>
+<li>Endless, non-repeating background, ambient music</li>
+</ul>
+
+
+
+<aside class="notes"><p>Practically speaking, though, this is how <em>I&rsquo;ll</em> be using undertone!</p>
+</aside>
+</section><section>
+<h2 id="so-far">So Far</h2>
+<ul>
+<li>
+
+
+
+<i class="fas  fa-check-square ">
+  
+  
+    
+    <link href="/fontawesome/css/all.min.css" rel="stylesheet">
+  
+</i>
+ Introduction</li>
+<li>
+
+
+
+<i class="fas  fa-check-square ">
+  
+  
+</i>
+ undertone</li>
+<li>
+
+
+
+<i class="fas  fa-check-square ">
+  
+  
+</i>
+ Demo</li>
+<li>
+
+
+
+<i class="fas  fa-check-square ">
+  
+  
+</i>
+ Architecture</li>
+<li>
+
+
+
+<i class="fas  fa-check-square ">
+  
+  
+</i>
+ Use Cases</li>
+<li>Languages</li>
+<li>FP, Global/Mutable State, and I/O</li>
+<li>Sound Synthesis as Functional Programming</li>
+<li>What&rsquo;s Next for undertone</li>
+<li>Q &amp; A</li>
+</ul>
+
+
+
+<aside class="notes"><p>Okay, here&rsquo;s a quick refresher on what we&rsquo;ve covered and what&rsquo;s left to do &hellip;</p>
+</aside>
+</section>
+
+<section data-noprocess data-shortcode-slide
+      data-background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png">
+  
+<h2 id="erlang--lfe">Erlang &amp; LFE</h2>
+<p>An example: a recursive function using pattern-matching in the function heads.</p>
+<h4 id="erlang">Erlang</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape><span style="color:#50fa7b">ackermann</span>(<span style="color:#bd93f9">0</span>, <span style="color:#8be9fd;font-style:italic">N</span>) <span style="color:#ff79c6">-&gt;</span>
+  <span style="color:#8be9fd;font-style:italic">N</span><span style="color:#ff79c6">+</span><span style="color:#bd93f9">1</span>;
+<span style="color:#50fa7b">ackermann</span>(<span style="color:#8be9fd;font-style:italic">M</span>, <span style="color:#bd93f9">0</span>) <span style="color:#ff79c6">-&gt;</span>
+  ackermann(<span style="color:#8be9fd;font-style:italic">M</span><span style="color:#ff79c6">-</span><span style="color:#bd93f9">1</span>, <span style="color:#bd93f9">1</span>);
+<span style="color:#50fa7b">ackermann</span>(<span style="color:#8be9fd;font-style:italic">M</span>, <span style="color:#8be9fd;font-style:italic">N</span>) <span style="color:#ff79c6">when</span> <span style="color:#8be9fd;font-style:italic">M</span> <span style="color:#ff79c6">&gt;</span> <span style="color:#bd93f9">0</span> <span style="color:#ff79c6">andalso</span> <span style="color:#8be9fd;font-style:italic">N</span> <span style="color:#ff79c6">&gt;</span> <span style="color:#bd93f9">0</span> <span style="color:#ff79c6">-&gt;</span>
+  ackermann(<span style="color:#8be9fd;font-style:italic">M</span><span style="color:#ff79c6">-</span><span style="color:#bd93f9">1</span>, ackermann(<span style="color:#8be9fd;font-style:italic">M</span>, <span style="color:#8be9fd;font-style:italic">N</span><span style="color:#ff79c6">-</span><span style="color:#bd93f9">1</span>)).
+</code></pre></div><h4 id="lfe">LFE</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape>(<span style="color:#50fa7b">defun</span> <span style="color:#8be9fd;font-style:italic">ackermann</span>
+  ((<span style="color:#bd93f9">0</span> <span style="color:#8be9fd;font-style:italic">n</span>) (<span style="color:#8be9fd;font-style:italic">+ </span><span style="color:#8be9fd;font-style:italic">n</span> <span style="color:#bd93f9">1</span>))
+  ((<span style="color:#50fa7b">m</span> <span style="color:#bd93f9">0</span>) (<span style="color:#50fa7b">ackermann</span> (<span style="color:#8be9fd;font-style:italic">- </span><span style="color:#8be9fd;font-style:italic">m</span> <span style="color:#bd93f9">1</span>) <span style="color:#bd93f9">1</span>))
+  ((<span style="color:#50fa7b">m</span> <span style="color:#8be9fd;font-style:italic">n</span>) (<span style="color:#50fa7b">ackermann</span> (<span style="color:#8be9fd;font-style:italic">- </span><span style="color:#8be9fd;font-style:italic">m</span> <span style="color:#bd93f9">1</span>) (<span style="color:#50fa7b">ackermann</span> <span style="color:#8be9fd;font-style:italic">m</span> (<span style="color:#8be9fd;font-style:italic">- </span><span style="color:#8be9fd;font-style:italic">n</span> <span style="color:#bd93f9">1</span>)))))
+</code></pre></div>
+
+
+<aside class="notes"><p>It&rsquo;s probably a goot bet that most attendees at the conference are more familiar with Erlang than LFE, so here&rsquo;s a little comparison to help you get your bearings.</p>
+<p>This is the same funciton &ndash; written in each &ndash; demonstrating some basic recursion as well as pattern matching in the function heads.</p>
+</aside>
+</section><section>
+<h2 id="extempore">Extempore</h2>
+<p>xtlang:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape>(<span style="color:#50fa7b">bind-func</span> <span style="color:#8be9fd;font-style:italic">AudioBuffer_data_b64</span>
+  (<span style="color:#ff79c6">lambda </span>(<span style="color:#50fa7b">ab:AudioBuffer*</span>)
+    (<span style="color:#ff79c6">let </span>((<span style="color:#50fa7b">b64size:i64</span> <span style="color:#bd93f9">0</span>)
+          (<span style="color:#50fa7b">datsize:i64</span> (<span style="color:#8be9fd;font-style:italic">* </span>(<span style="color:#50fa7b">AudioBuffer_frames</span> <span style="color:#8be9fd;font-style:italic">ab</span>)
+                          (<span style="color:#50fa7b">AudioBuffer_channels</span> <span style="color:#8be9fd;font-style:italic">ab</span>) <span style="color:#bd93f9">4</span>)))
+      (<span style="color:#50fa7b">String</span> (<span style="color:#50fa7b">base64_encode</span> (<span style="color:#50fa7b">cast</span> (<span style="color:#50fa7b">tref</span> <span style="color:#8be9fd;font-style:italic">ab</span> <span style="color:#bd93f9">4</span>) <span style="color:#8be9fd;font-style:italic">i8*</span>)
+                             <span style="color:#8be9fd;font-style:italic">datsize</span>
+                             (<span style="color:#50fa7b">ref</span> <span style="color:#8be9fd;font-style:italic">b64size</span>))))))
+</code></pre></div>
+
+
+<aside class="notes"><p>If that wasn&rsquo;t complicated enough, there are two more languages invloved here as well. This is Extempore&rsquo;s xtlang, which provides low-level access to all aspects of the Extempore system.</p>
+</aside>
+</section><section>
+<h2 id="extempore-1">Extempore</h2>
+<p>Scheme:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape>(<span style="color:#50fa7b">sys:load</span> <span style="color:#f1fa8c">&#34;libs/external/portmidi.xtm&#34;</span>)
+(<span style="color:#50fa7b">pm_initialize</span>)
+(<span style="color:#ff79c6">define </span><span style="color:#8be9fd;font-style:italic">*midi-out*</span> (<span style="color:#50fa7b">pm_create_output_stream</span> <span style="color:#bd93f9">3</span>))
+
+(<span style="color:#ff79c6">define </span><span style="color:#8be9fd;font-style:italic">midi-loop</span>
+  (<span style="color:#ff79c6">lambda </span>(<span style="color:#50fa7b">beat</span> <span style="color:#8be9fd;font-style:italic">dur</span>)
+    (<span style="color:#50fa7b">mplay</span> <span style="color:#8be9fd;font-style:italic">*midi-out*</span>
+           (<span style="color:#50fa7b">random</span> (<span style="color:#8be9fd;font-style:italic">list </span><span style="color:#bd93f9">36</span> <span style="color:#bd93f9">43</span> <span style="color:#bd93f9">48</span> <span style="color:#bd93f9">51</span> <span style="color:#bd93f9">60</span> <span style="color:#bd93f9">60</span> <span style="color:#bd93f9">60</span> <span style="color:#bd93f9">67</span> <span style="color:#bd93f9">70</span> <span style="color:#bd93f9">74</span> <span style="color:#bd93f9">75</span>))
+           (<span style="color:#50fa7b">random</span> <span style="color:#bd93f9">60</span> <span style="color:#bd93f9">80</span>)
+           <span style="color:#8be9fd;font-style:italic">dur</span> <span style="color:#bd93f9">0</span>)
+    (<span style="color:#50fa7b">callback</span> (<span style="color:#50fa7b">*metro*</span> (<span style="color:#8be9fd;font-style:italic">+ </span><span style="color:#8be9fd;font-style:italic">beat</span> (<span style="color:#8be9fd;font-style:italic">* </span><span style="color:#ff79c6">.</span><span style="color:#bd93f9">5</span> <span style="color:#8be9fd;font-style:italic">dur</span>)))
+              <span style="color:#f1fa8c">&#39;midi-loop</span>
+              (<span style="color:#8be9fd;font-style:italic">+ </span><span style="color:#8be9fd;font-style:italic">beat</span> <span style="color:#8be9fd;font-style:italic">dur</span>)
+              <span style="color:#8be9fd;font-style:italic">dur</span>)))
+
+(<span style="color:#50fa7b">midi-loop</span> (<span style="color:#50fa7b">*metro*</span> <span style="color:#f1fa8c">&#39;get-beat</span> <span style="color:#bd93f9">4</span>) <span style="color:#bd93f9">1</span><span style="color:#8be9fd;font-style:italic">/4</span>)
+
+(<span style="color:#ff79c6">define </span><span style="color:#8be9fd;font-style:italic">midi-loop</span>
+  (<span style="color:#ff79c6">lambda </span>(<span style="color:#50fa7b">beat</span> <span style="color:#8be9fd;font-style:italic">dur</span>) #t))
+</code></pre></div>
+
+
+<aside class="notes"><p>And this is Extempore&rsquo;s higher-level language, a derivative of Tiny Scheme.</p>
+<p>This is what most Extempore performers use &ndash; and, in fact, is what you saw me pasting into the REPL at the beginning of the demo.</p>
+</aside>
+</section><section>
+<h2 id="fp-in-an-io-world">FP in an I/O World</h2>
+<p>A mutable, global system bent upon I/O</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape>(<span style="color:#50fa7b">sys:load</span> <span style="color:#f1fa8c">&#34;libs/external/portmidi.xtm&#34;</span>)
+(<span style="color:#50fa7b">pm_initialize</span>)
+(<span style="color:#ff79c6">define </span><span style="color:#8be9fd;font-style:italic">*midi-out*</span> (<span style="color:#50fa7b">pm_create_output_stream</span> <span style="color:#bd93f9">3</span>))
+
+(<span style="color:#ff79c6">define </span><span style="color:#8be9fd;font-style:italic">midi-loop</span>
+  (<span style="color:#ff79c6">lambda </span>(<span style="color:#50fa7b">beat</span> <span style="color:#8be9fd;font-style:italic">dur</span>)
+    (<span style="color:#50fa7b">mplay</span> <span style="color:#8be9fd;font-style:italic">*midi-out*</span>
+           (<span style="color:#50fa7b">random</span> (<span style="color:#8be9fd;font-style:italic">list </span><span style="color:#bd93f9">36</span> <span style="color:#bd93f9">43</span> <span style="color:#bd93f9">48</span> <span style="color:#bd93f9">51</span> <span style="color:#bd93f9">60</span> <span style="color:#bd93f9">60</span> <span style="color:#bd93f9">60</span> <span style="color:#bd93f9">67</span> <span style="color:#bd93f9">70</span> <span style="color:#bd93f9">74</span> <span style="color:#bd93f9">75</span>))
+           (<span style="color:#50fa7b">random</span> <span style="color:#bd93f9">60</span> <span style="color:#bd93f9">80</span>)
+           <span style="color:#8be9fd;font-style:italic">dur</span> <span style="color:#bd93f9">0</span>)
+    (<span style="color:#50fa7b">callback</span> (<span style="color:#50fa7b">*metro*</span> (<span style="color:#8be9fd;font-style:italic">+ </span><span style="color:#8be9fd;font-style:italic">beat</span> (<span style="color:#8be9fd;font-style:italic">* </span><span style="color:#ff79c6">.</span><span style="color:#bd93f9">5</span> <span style="color:#8be9fd;font-style:italic">dur</span>)))
+              <span style="color:#f1fa8c">&#39;midi-loop</span>
+              (<span style="color:#8be9fd;font-style:italic">+ </span><span style="color:#8be9fd;font-style:italic">beat</span> <span style="color:#8be9fd;font-style:italic">dur</span>)
+              <span style="color:#8be9fd;font-style:italic">dur</span>)))
+
+(<span style="color:#50fa7b">midi-loop</span> (<span style="color:#50fa7b">*metro*</span> <span style="color:#f1fa8c">&#39;get-beat</span> <span style="color:#bd93f9">4</span>) <span style="color:#bd93f9">1</span><span style="color:#8be9fd;font-style:italic">/4</span>)
+
+(<span style="color:#ff79c6">define </span><span style="color:#8be9fd;font-style:italic">midi-loop</span>
+  (<span style="color:#ff79c6">lambda </span>(<span style="color:#50fa7b">beat</span> <span style="color:#8be9fd;font-style:italic">dur</span>) #t))
+</code></pre></div>
+
+
+<aside class="notes"><p>In both cases developers are accessing mutable data, changing elements of the system as it runs, and using those changes to generate music. While perfectly suited for what it does, the appeal to a functional programmer is perhaps not immediately apparent.</p>
+</aside>
+</section>
+
+<section data-noprocess data-shortcode-slide
+      data-background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png">
+  
+<h2 id="fp-in-an-io-world-1">FP in an I/O World</h2>
+<p>An LFE sequencer in undertone?</p>
+<p><img src="Moog-modular-sequencer.jpg" /></p>
+
+
+
+<aside class="notes"><p>But a second or third glance might inspire such a programmer to look at a classic sequencer such as this one &ndash; which, by the way, were based upon telephon switching hardware &ndash; and  &hellip;</p>
+</aside>
+</section>
+
+<section data-noprocess data-shortcode-slide
+      data-background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png">
+  
+<h2 id="fp-in-an-io-world-2">FP in an I/O World</h2>
+<p>Yes!</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape>(<span style="color:#50fa7b">set</span> <span style="color:#8be9fd;font-style:italic">opts</span> (<span style="color:#8be9fd;font-style:italic">xt.seq:midi-opts</span> <span style="color:#8be9fd;font-style:italic">sequence-name</span>
+                            <span style="color:#8be9fd;font-style:italic">device-name</span>
+                            <span style="color:#8be9fd;font-style:italic">device-id</span>
+                            <span style="color:#8be9fd;font-style:italic">midi-channel</span>
+                            <span style="color:#8be9fd;font-style:italic">seq1</span>
+                            <span style="color:#8be9fd;font-style:italic">pulse1</span>
+                            <span style="color:#8be9fd;font-style:italic">beats-per-minute</span>
+                            <span style="color:#8be9fd;font-style:italic">beats-per-measure</span>
+                            <span style="color:#8be9fd;font-style:italic">note-timing</span>))
+(<span style="color:#8be9fd;font-style:italic">xt.seq:start</span> <span style="color:#8be9fd;font-style:italic">opts</span>)
+(<span style="color:#8be9fd;font-style:italic">xt.midi:cc-ramp</span> (<span style="color:#8be9fd;font-style:italic">mupd</span> <span style="color:#8be9fd;font-style:italic">opts</span> <span style="color:#f1fa8c">&#39;cc-code</span> (<span style="color:#8be9fd;font-style:italic">cutoff-filter-1</span>)) <span style="color:#bd93f9">15</span> <span style="color:#bd93f9">40</span> <span style="color:#bd93f9">5</span>)
+(<span style="color:#8be9fd;font-style:italic">xt.seq:set-midi-notes!</span> (<span style="color:#8be9fd;font-style:italic">mupd</span> <span style="color:#8be9fd;font-style:italic">opts</span> <span style="color:#f1fa8c">&#39;notes</span> <span style="color:#ff79c6">&#39;</span>(<span style="color:#8be9fd;font-style:italic">c3</span> <span style="color:#8be9fd;font-style:italic">c3</span> <span style="color:#8be9fd;font-style:italic">c4</span>  <span style="color:#8be9fd;font-style:italic">c4</span> <span style="color:#8be9fd;font-style:italic">a#3</span> <span style="color:#8be9fd;font-style:italic">g3</span>)))
+</code></pre></div>
+
+
+<aside class="notes"><p>&hellip; use immutable data structures and all the language&rsquo;s vast resources to carefully manage that global state with code like this:</p>
+<p>In the first demo you sawe me calling functions such as these to start, modify, and stop a sequencer in LFE.</p>
+</aside>
+</section><section>
+<h2 id="fp-in-an-io-world-3">FP in an I/O World</h2>
+<p><img src="lol_clean_fp.jpg" /></p>
+
+
+
+<aside class="notes"><p>This approach to managing Extempore&rsquo;s state &ndash; as you may well imagine &ndash; helps a programmer to keep much better track of what&rsquo;s going on and how to change the system in a predictable manner.</p>
+</aside>
+</section><section>
+<h2 id="synthesis-as-functional-programming">Synthesis as Functional Programming</h2>
+<p><img src="lol_beautiful_fp.jpg" /></p>
+
+
+
+<aside class="notes"><p>Next we&rsquo;ll touch on the topic of sound synthesis, and in particular, its fundamental concepts and how well these map to the principals of functional programming.</p>
+<p>This topic deserves a little context, though &hellip; so let&rsquo;s take a scenic route</p>
+</aside>
+</section><section>
+<h2 id="the-beginnings-of-sound-synthesis">The Beginnings of Sound Synthesis</h2>
+<p><img src="Teleharmonium1897.jpg" /></p>
+
+
+
+<aside class="notes"><p>This is a picture of the Telharmonium or Dynamophone, and early electro-mechanical musical device created in 1896. Only the smallest portion is shown: essentially the console. The bulk of the instrument remained housed in the basement of the performance hall, connected to the console via electrical wires. And I do mean bulk: the second and third iterations of this instrument weighed 210 tonnes.</p>
+</aside>
+</section><section>
+<h2 id="the-beginnings-of-sound-synthesis-1">The Beginnings of Sound Synthesis</h2>
+<img src="Theramin-Alexandra-Stepanoff-1930.jpg" width="40%"/>
+
+
+
+<aside class="notes"><p>On the other end of the spectrum was this device, the Theremin: created in the 1920s. It was this device that originally captured the imagination and electrical engineering skills of Bob Moog, eventual invetor of the Moog synthesizer. His company still manufactures Theremins today.</p>
+</aside>
+</section><section>
+<h2 id="the-beginnings-of-sound-synthesis-2">The Beginnings of Sound Synthesis</h2>
+<p><img src="UnitDeltaPlus_1966.jpg" /></p>
+
+
+
+<aside class="notes"><p>And then there was Peter Zinovieff who had this kit in his garden shed in Britain. He was the son of a Russian princess and the first private owner of PDP-8s as personal computers (he had two of them &ndash; both used for sound synthesis). Zinovieff worked with Pink Floyd</p>
+<p>He and Bob Moog had a lot of the same ideas created independently of each other, both using voltage-controlled filters to produce sounds.</p>
+</aside>
+</section><section>
+<h2 id="the-beginnings-of-sound-synthesis-3">The Beginnings of Sound Synthesis</h2>
+<img src="subtractive-synthesis.jpg" width="70%"/>
+
+
+
+<aside class="notes"><p>By the mid-60s sound synthesis had converged upon the basics of what is now called &ldquo;Subtractive Synthesis&rdquo;: an oscillating sound source acts as input for various filters, amplifiers, modulators, etc.</p>
+</aside>
+</section><section>
+<h2 id="synthesis-as-functional-programming-1">Synthesis as Functional Programming</h2>
+<p><img src="ADSR_parameters.jpg" /></p>
+
+
+
+<aside class="notes"><p>Here is a graphic depiction of what has become one of the foundations of sound synthesis, originally used to electronnically model the behaviour of physical musical instruments. This is a depiction of &ldquo;envelope&rdquo; or how a sound changes over time. It was originally implemented with a doorbell switch initating the envelope trigger event and a capacitor to gradually release the voltage associated with the musical note.</p>
+<p>In essence, then, what we have here is a function generating output &ndash; the keypress; and then that output being transformed in a specific, repeatable manner given the state of the envelope at any given point in time.</p>
+</aside>
+</section><section>
+<h2 id="synthesis-as-functional-programming-2">Synthesis as Functional Programming</h2>
+<p><img src="basicpatch.jpg" /></p>
+
+
+
+<aside class="notes"><p>To provide some context, the ADSR parameters of the envelope generator are shown here in the third and second to last modules on the right, each affecting different parts of the signal chain.</p>
+</aside>
+</section>
+
+<section data-noprocess data-shortcode-slide
+      data-transition="none">
+  
+<h2 id="synthesis-as-functional-programming-3">Synthesis as Functional Programming</h2>
+<p><img src="basicpatch.jpg" /></p>
+
+
+
+<aside class="notes"><p>This is a diagram from an introduction to modular synthesis on the web site synthesizer.com.</p>
+<p>It represents a very simple setup or &ldquo;patch&rdquo; where MIDI signals are providing the messages that generate the initial volatge.</p>
+<p>Subsequent modules in the signal chain modify that signal or are used to affect another module that will ultimately modify the total output of the system.</p>
+</aside>
+</section>
+
+<section data-noprocess data-shortcode-slide
+      data-transition="none">
+  
+<h2 id="synthesis-as-functional-programming-4">Synthesis as Functional Programming</h2>
+<p><img src="basicpatch.jpg" /></p>
+
+
+
+<aside class="notes"><p>One intersting differnce between analog computing such as this and the functional programming we are more used to is the temporal element. We generally don&rsquo;t run into something analogous to this at the language level; rather we see this in I/O systems that change over time, such as messaging or stream processing frameworks.</p>
+<p>Of course, from the mathematical perspective, this puts us solidly in the realm of the calculus and partial differential equations.</p>
+</aside>
+</section><section>
+<h2 id="synthesis-as-functional-programming-5">Synthesis as Functional Programming</h2>
+<p><img src="synthpatch_1000.png" /></p>
+
+
+
+<aside class="notes"><p>For the electronically minded, here&rsquo;s a logical digram of the previous patch cable diagram. This should help make the point more clearly: that sound synthesis of this form is reducable to the standard mathematical approximations of electronic circuit operations, arguably deeply functional in nature, if thoroughly within the domain of I/O.</p>
+</aside>
+</section><section>
+<h2 id="synthesis-as-functional-programming-6">Synthesis as Functional Programming</h2>
+<p><img src="modular-v.jpg" /></p>
+
+
+
+<aside class="notes"><p>Extending the patch example I&rsquo;ve just shown to something in practice: here is a screenshot of the same Moog modular synth I used in the demo.</p>
+<p>Note that this is a <em>very simple</em> patch! However, despite the increasing complexity, the same principles apply &hellip; with the various modules producing outputs that become the inputs of other modules.</p>
+<p>As you might be intuiting with the cable-crossing seen here,
+the degree to which one may apply the outputs of one module may lead to an exponential increase in complexity.</p>
+</aside>
+</section><section>
+<h2 id="synthesis-as-functional-programming-7">Synthesis as Functional Programming</h2>
+<p><img src="keith-emerson.jpg" /></p>
+
+
+
+<aside class="notes"><p>And could result in taking the thing to its logical extreme &hellip;</p>
+<p>which gives us the likes of Keith Emerson from Emerson, Lake, and Palmer.</p>
+<p>His synth patches are famous for their great sounds and stunning electronic complexity. And he had a <em>monster</em> of a custom Moog setup &ndash; which was equally famous.</p>
+<p>Oh, what a lucky man he was &hellip;</p>
+</aside>
+</section><section>
+<h2 id="whats-next-for-undertone">What&rsquo;s Next for undertone?</h2>
+<p><img src="undertone-github.jpg" width="80%" /></p>
+
+
+
+<aside class="notes"><p>So what&rsquo;s next for undertone? I have created tickets for efforts such as:</p>
+<ul>
+<li>Deeper support of Extempore in native LFE</li>
+<li>Live capture of music, recorded as LFE data structures</li>
+<li>A Hybrid LFE/Extempore REPL</li>
+<li>Digital Signal Processing from LFE</li>
+<li>More support for open source synthesizers</li>
+<li>Explore the collaboration possibilities with the distributed platform that LFE offers</li>
+<li>Lots of practical use in generating music, exploring music theory &hellip; and just <em>listening!</em></li>
+</ul>
+</aside>
+</section><section>
+<h2 id="land-of-lisp">Land of Lisp</h2>
+<p>Special thanks to Conrad Barski, M.D. <br />
+for his kind permission in using images from his book in this talk.</p>
+<p>Buy it! <a href="http://landoflisp.com/">http://landoflisp.com/</a></p>
+
+
+
+<aside class="notes"></aside>
+</section><section>
+<h2 id="closing-q--a">Closing Q &amp; A</h2>
+
+
+
+<aside class="notes"></aside>
+</section><section>
+<h4 id="contact">Contact</h4>
+<ul>
+<li>
+
+
+
+<i class="fas  fa-envelope ">
+  
+  
+</i>
+ <a href="mailto:oubiwann@gmail.com">oubiwann@gmail.com</a></li>
+<li>
+
+
+  
+
+
+<i class="fab  fa-fab  fa-twitter-square ">
+  
+  
+</i>
+ <a href="">@oubiwann</a></li>
+<li>
+
+
+  
+
+
+<i class="fab  fa-fab  fa-linkedin ">
+  
+  
+</i>
+ <a href="">linkedin.com/in/oubiwann</a></li>
+<li>
+
+
+  
+
+
+<i class="fab  fa-fab  fa-twitter-square ">
+  
+  
+</i>
+ <a href="">@forgottentones</a></li>
+<li>
+
+
+  
+
+
+<i class="fab  fa-fab  fa-soundcloud ">
+  
+  
+</i>
+ <a href="https://soundcloud.com/forgotten-tones/tracks">https://soundcloud.com/forgotten-tones/tracks</a></li>
+</ul>
+
+
+
+<aside class="notes"><p>Here&rsquo;s how you can reach me &hellip;</p>
+</aside>
+</section><section>
+<h4 id="lfe-resources">LFE Resources</h4>
+<ul>
+<li>
+
+
+
+<i class="fas  fa-globe ">
+  
+  
+</i>
+ <a href="https://lfe.io/">https://lfe.io/</a></li>
+<li>
+
+
+  
+
+
+<i class="fab  fa-fab  fa-github-square ">
+  
+  
+</i>
+ <a href="https://github.com/rvirding/lfe">https://github.com/rvirding/lfe</a></li>
+<li>
+
+
+  
+
+
+<i class="fab  fa-fab  fa-slack ">
+  
+  
+</i>
+ <a href="">lfe.slack.com</a></li>
+<li>
+
+
+
+<i class="fas  fa-users ">
+  
+  
+</i>
+ <a href="http://groups.google.com/group/lisp-flavoured-erlang">http://groups.google.com/group/lisp-flavoured-erlang</a></li>
+<li>
+
+
+  
+
+
+<i class="fab  fa-fab  fa-twitter-square ">
+  
+  
+</i>
+ <a href="">@ErlangLisp</a></li>
+</ul>
+
+
+
+<aside class="notes"><p>Here&rsquo;s where stuff is &hellip;</p>
+</aside>
+</section><section>
+<h4 id="undertone-resources">undertone Resources</h4>
+<ul>
+<li>
+
+
+  
+
+
+<i class="fab  fa-fab  fa-github-square ">
+  
+  
+</i>
+ <a href="https://github.com/ut-proj/undertone">https://github.com/ut-proj/undertone</a></li>
+<li>
+
+
+  
+
+
+<i class="fas  fa-fas  fa-book ">
+  
+  
+</i>
+ <a href="https://undertone.lfe.io/book">https://undertone.lfe.io/book</a></li>
+<li>
+
+
+  
+
+
+<i class="fab  fa-fab  fa-slack ">
+  
+  
+</i>
+ <a href="">lfe.slack.com</a> #algo-sound</li>
+<li>
+
+
+
+<i class="fas  fa-users ">
+  
+  
+</i>
+ <a href="http://groups.google.com/group/lfe-undertone">http://groups.google.com/group/lfe-undertone</a></li>
+<li>
+
+
+  
+
+
+<i class="fab  fa-fab  fa-twitter-square ">
+  
+  
+</i>
+ <a href="">@lfeundertone</a></li>
+<li>
+
+
+  
+
+
+<i class="fab  fa-fab  fa-instagram ">
+  
+  
+</i>
+ <a href="https://www.instagram.com/lfeundertone/">https://www.instagram.com/lfeundertone/</a></li>
+</ul>
+</section>
+
+
+
+<aside class="notes"><h2 id="overview">Overview</h2>
+<ul>
+<li>Background, sound in the digital world, etc.</li>
+<li>Homage: Joe Armstrong&rsquo;s explorations</li>
+<li>Extempore vs. SuperCollider</li>
+<li>Lisp Flavoured Erlang 2.0</li>
+<li>Extempore in OTP</li>
+<li>Making Music</li>
+</ul>
+<h2 id="background-me">Background (me)</h2>
+<ul>
+<li>4 yo - Messing about with Piano</li>
+<li>8 yo - Started formal piano lessons, casual guitar</li>
+<li>16 yo - Performed in a chamber music group</li>
+<li>22 yo - Assembled a home recording studio</li>
+<li>25 yo - Stopped playing music, replaced with physics / maths studies</li>
+<li>48 yo - Started playing again</li>
+</ul>
+<h2 id="terminology">Terminology</h2>
+<h4 id="algorithmic-composition">Algorithmic Composition</h4>
+<p>=?=</p>
+<h4 id="generative-music">Generative Music</h4>
+<h2 id="background-generative-music">Background (generative music)</h2>
+<ul>
+<li class="fragment">1957 - Max Mathews MUSIC-1 on the IBM 704</li>
+<li class="fragment">(1958 - LISP, also on the IBM 704)</li>
+<li class="fragment">1962 - Sekine & Hayashi on the TOSBAC</li>
+<li class="fragment">1964 - Moog & Deutsch with prototype synthesizers; Don Buchla creates the first commercial analog sequencer on the Buchla 100</li>
+<li class="fragment">1969 - Max Mathews GROOVE on a Honeywell DDP-24; Peter Zinovieff MUSYS on PDP-8s</li>
+<li class="fragment">1971 - EMS releases first digital sequencer</li>
+</ul>
+<h2 id="background-generative-music-1">Background (generative music)</h2>
+<ul>
+<li class="fragment">1957 - Max Mathews MUSIC-1 on the IBM 704</li>
+<li class="fragment">(1958 - LISP, also on the IBM 704)</li>
+<li class="fragment">1962 - Sekine & Hayashi on the TOSBAC</li>
+<li class="fragment">1964 - Moog & Deutsch with prototype synthesizers; Don Buchla creates the first commercial analog sequencer on the Buchla 100</li>
+<li class="fragment">1969 - Max Mathews GROOVE on a Honeywell DDP-24; Peter Zinovieff MUSYS on PDP-8s</li>
+<li class="fragment">1971 - EMS releases first digital sequencer</li>
+</ul>
+<h2 id="background-digital-music">Background (digital music)</h2>
+<ul>
+<li class="fragment">Early 1980s - Musical Interface Digital Interface (MIDI) standard created</li>
+<li class="fragment">1990s - Digital music recording took off</li>
+<li class="fragment">2000s - Recording on regular PCs</li>
+<li class="fragment">Early 2010s - Open Sound Control (OSC) standard created </li>
+<li class="fragment">2010s - Digital Audio Workstation (DAW) software, tube/analog emulation, live-coding</li>
+</ul>
+<h2 id="erlang--sound">Erlang &amp; Sound</h2>
+<ul>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+</ul>
+<h2 id="extempore-vs-supercollider">Extempore vs. SuperCollider</h2>
+<ul>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+<li class="fragment">XXX</li>
+</ul>
+<h2 id="undertone">undertone</h2>
+<p>What is it good for?</p>
+<h2 id="review">Review</h2>
+<ul>
+<li></li>
+</ul>
+<i class="fas  fa-check-square ">
+</i>
+ Background, sound in the digital world, etc.
+* 
+<i class="fas  fa-check-square ">
+</i>
+ Homage: Joe Armstrong's explorations
+* 
+<i class="fas  fa-check-square ">
+</i>
+ Extempore vs. SuperCollider
+* Lisp Flavoured Erlang 2.0
+* Extempore in OTP
+* Making Music
+<section data-noprocess data-shortcode-slide
+      data-background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png">
+<h2 id="lfe">LFE</h2>
+<p>What is it?</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape><span style="color:#50fa7b">ackermann</span>(<span style="color:#bd93f9">0</span>, <span style="color:#8be9fd;font-style:italic">N</span>) <span style="color:#ff79c6">-&gt;</span>
+  <span style="color:#8be9fd;font-style:italic">N</span><span style="color:#ff79c6">+</span><span style="color:#bd93f9">1</span>;
+<span style="color:#50fa7b">ackermann</span>(<span style="color:#8be9fd;font-style:italic">M</span>, <span style="color:#bd93f9">0</span>) <span style="color:#ff79c6">-&gt;</span>
+  ackermann(<span style="color:#8be9fd;font-style:italic">M</span><span style="color:#ff79c6">-</span><span style="color:#bd93f9">1</span>, <span style="color:#bd93f9">1</span>);
+<span style="color:#50fa7b">ackermann</span>(<span style="color:#8be9fd;font-style:italic">M</span>, <span style="color:#8be9fd;font-style:italic">N</span>) <span style="color:#ff79c6">when</span> <span style="color:#8be9fd;font-style:italic">M</span> <span style="color:#ff79c6">&gt;</span> <span style="color:#bd93f9">0</span> <span style="color:#ff79c6">andalso</span> <span style="color:#8be9fd;font-style:italic">N</span> <span style="color:#ff79c6">&gt;</span> <span style="color:#bd93f9">0</span> <span style="color:#ff79c6">-&gt;</span>
+  ackermann(<span style="color:#8be9fd;font-style:italic">M</span><span style="color:#ff79c6">-</span><span style="color:#bd93f9">1</span>, ackermann(<span style="color:#8be9fd;font-style:italic">M</span>, <span style="color:#8be9fd;font-style:italic">N</span><span style="color:#ff79c6">-</span><span style="color:#bd93f9">1</span>)).
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape>(<span style="color:#50fa7b">defun</span> <span style="color:#8be9fd;font-style:italic">ackermann</span>
+  ((<span style="color:#bd93f9">0</span> <span style="color:#8be9fd;font-style:italic">n</span>) (<span style="color:#8be9fd;font-style:italic">+ </span><span style="color:#8be9fd;font-style:italic">n</span> <span style="color:#bd93f9">1</span>))
+  ((<span style="color:#50fa7b">m</span> <span style="color:#bd93f9">0</span>) (<span style="color:#50fa7b">ackermann</span> (<span style="color:#8be9fd;font-style:italic">- </span><span style="color:#8be9fd;font-style:italic">m</span> <span style="color:#bd93f9">1</span>) <span style="color:#bd93f9">1</span>))
+  ((<span style="color:#50fa7b">m</span> <span style="color:#8be9fd;font-style:italic">n</span>) (<span style="color:#50fa7b">ackermann</span> (<span style="color:#8be9fd;font-style:italic">- </span><span style="color:#8be9fd;font-style:italic">m</span> <span style="color:#bd93f9">1</span>) (<span style="color:#50fa7b">ackermann</span> <span style="color:#8be9fd;font-style:italic">m</span> (<span style="color:#8be9fd;font-style:italic">- </span><span style="color:#8be9fd;font-style:italic">n</span> <span style="color:#bd93f9">1</span>)))))
+</code></pre></div><h2 id="dont-panic">Don&rsquo;t Panic</h2>
+<h2 id="q--a-time">Q &amp; A Time</h2>
+</aside>
+</section>
+
+  
+
+
+</div>
+      
+
+    </div>
+<script type="text/javascript" src=/reveal-hugo/object-assign.js></script>
+
+<a href="/reveal-js/css/print/" id="print-location" style="display: none;"></a>
+<script type="text/javascript">
+  var printLocationElement = document.getElementById('print-location');
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = printLocationElement.href + (window.location.search.match(/print-pdf/gi) ? 'pdf.css' : 'paper.css');
+  document.getElementsByTagName('head')[0].appendChild(link);
+</script>
+
+<script type="application/json" id="reveal-hugo-site-params">{"custom_theme":"lfe-green.scss","custom_theme_compile":true,"highlight_theme":"atom-one-dark","margin":0.2,"plugins":["plugin/menu/menu.js"],"theme":"night","transition":"fade"}</script>
+<script type="application/json" id="reveal-hugo-page-params">null</script>
+
+<script src="/reveal-js/js/reveal.js"></script>
+
+<script type="text/javascript">
+  
+  
+  function camelize(map) {
+    if (map) {
+      Object.keys(map).forEach(function(k) {
+        newK = k.replace(/(\_\w)/g, function(m) { return m[1].toUpperCase() });
+        if (newK != k) {
+          map[newK] = map[k];
+          delete map[k];
+        }
+      });
+    }
+    return map;
+  }
+  
+  var revealHugoDefaults = { center: true, controls: true, history: true, progress: true, transition: "slide" };
+  var revealHugoSiteParams = JSON.parse(document.getElementById('reveal-hugo-site-params').innerHTML);
+  var revealHugoPageParams = JSON.parse(document.getElementById('reveal-hugo-page-params').innerHTML);
+  
+  var options = Object.assign({},
+    camelize(revealHugoDefaults),
+    camelize(revealHugoSiteParams),
+    camelize(revealHugoPageParams));
+  Reveal.initialize(options);
+</script>
+
+
+  
+  
+  <script type="text/javascript" src="/reveal-js/plugin/markdown/marked.js"></script>
+  
+  <script type="text/javascript" src="/reveal-js/plugin/markdown/markdown.js"></script>
+  
+  <script type="text/javascript" src="/reveal-js/plugin/highlight/highlight.js"></script>
+  
+  <script type="text/javascript" src="/reveal-js/plugin/zoom-js/zoom.js"></script>
+  
+  
+  <script type="text/javascript" src="/reveal-js/plugin/notes/notes.js"></script>
+
+
+
+<script type="text/javascript" src="/plugin/menu/menu.js"></script>
+
+    
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']]
+  },
+  svg: {
+    fontCache: 'global'
+  }
+};
+</script>
+
+    
+  </body>
+</html>
