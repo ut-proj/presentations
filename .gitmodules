@@ -1,0 +1,4 @@
+[submodule "published"]
+	path = published
+	url = git@github.com:ut-proj/lambda-days-2021.git
+	branch = published

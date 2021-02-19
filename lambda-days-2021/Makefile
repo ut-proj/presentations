@@ -12,6 +12,9 @@ PDF_GEN_TAG=astefanutti/decktape
 
 default: run
 
+pwd:
+	@echo $(PWD)
+
 img:
 	@docker build -t $(TAG) .
 
