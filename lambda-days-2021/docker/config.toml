@@ -1,6 +1,6 @@
-baseURL = "http://example.org/"
+baseURL = "https://undertone.lfe.io/presentations/lambda-days-2021/"
 languageCode = "en-us"
-title = "My New Hugo Site"
+title = "Sound on BEAM: Music in the Land of Distributed Lisp"
 theme = "reveal-hugo"
 
 [outputFormats.Reveal]
