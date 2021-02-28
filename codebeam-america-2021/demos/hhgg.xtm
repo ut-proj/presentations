@@ -1,15 +1,123 @@
-;;;; An undertone / Extempore demonstration of Generative music with Markov
+;;;; An undertone / Extempore demonstration of generative music with Markov
 ;;;; chains, with a special focus on:
 ;;;;
-;;;; * 
-;;;; * Conditional changes in volume and key
-;;;; * Progression changes via sinusoidal time
-;;;; * The LFE sequencer
-;;;; * Both software AND hardware synthesis
+;;;; * TBD
 ;;;;
 ;;;; Demo steps / script:
 ;;;;
 ;;;; * TBD
+
+;;; Chord progression for Journey of the Sorcerer (theme for the Hitchhiker's
+;;; Guide to the Galaxy):
+;;;
+;;; Key: Cm
+;;;
+;;; .  .  . . | .    . . . | .  Cm . . | .  . . .
+;;; .  .  . . | .    . . . | .  .  . . | Ab . . .
+;;; .  .  . . | Fm   . . . | F  .  . . | Ab . . .
+;;; .  Eb . . | Cm   . . . | .  .  . . | Ab . . .
+;;; .  .  . . | Fdim . . . | F  .  . . | Ab . . .
+;;; .  .  . . | Eb   . . . | G  .  . . | F  . . .
+;;; Cm .  . . | F    . . . | Cm .  . . | F  . . .
+;;; Cm .  . . | F    . . . | Cm .  . . | F  . . .
+;;; C  .  . . | F    . . . | Cm .  . . | F  . . .
+;;; Cm .  . . | Eb   F . . | Cm .  . . | .  . . .
+;;; Ab .  . . | .    . . . | F  .  . . | .  . . .
+;;; .  .  . . | .    . . . | .
+;;;
+;;; Chords -> Modes:
+;;; * Cm   = i   (natural + melodic minor)
+;;; * Fm   = iv  (natural minor)
+;;; * F    = IV  (melodic minor)
+;;; * Ab   = VI  (natural minor)
+;;; * Eb   = III (natural minor)
+;;; * Fdim = IVo (?)
+;;; * G    = V   (melodic minor)
+;;; * C    = I   (major)
+;;;
+;;; Rewriting the chord progression in modes, we have this:
+;;;
+;;; .  .   . . | .   .  . . | .  i  . . | .  . . .
+;;; .  .   . . | .   .  . . | .  .  . . | VI . . .
+;;; .  .   . . | iv  .  . . | IV .  . . | VI . . .
+;;; .  III . . | i   .  . . | .  .  . . | VI . . .
+;;; .  .   . . | IVo .  . . | IV .  . . | VI . . .
+;;; .  .   . . | III .  . . | V  .  . . | IV . . .
+;;; i  .   . . | IV  .  . . | i  .  . . | IV . . .
+;;; i  .   . . | IV  .  . . | i  .  . . | IV . . .
+;;; I  .   . . | IV  .  . . | i  .  . . | IV . . .
+;;; i  .   . . | III IV . . | i  .  . . | .  . . .
+;;; VI .   . . | .   .  . . | IV .  . . | .  . . .
+;;; .  .   . . | .   .  . . | .
+;;;
+;;; Transitions:
+;;;
+;;; I   -> IV  (1)
+;;; III -> IV  (1) V  (1) i   (1)
+;;; IV  -> I   (1) VI (2) i   (7)
+;;; IVo -> IV  (1)
+;;; V   -> IV  (1)
+;;; VI  -> III (2) IV (1) IVo (1) iv (1)
+;;; i   -> III (1) IV (5) VI  (3)
+;;; iv  -> IV  (1)
+;;;
+;;; Key changes (Nm=Natural Minor, Mm=Melodic Minor, M=Major):
+;;;
+;;; .  . . . | .  .  . . | .  Nm . . | .  . . .
+;;; .  . . . | .  .  . . | .  .  . . | .  . . .
+;;; .  . . . | .  .  . . | Mm .  . . | Nm . . .
+;;; .  . . . | .  .  . . | .  .  . . | .  . . .
+;;; .  . . . | .  .  . . | Mm .  . . | Nm . . .
+;;; .  . . . | .  .  . . | Mm .  . . | .  . . .
+;;; .  . . . | .  .  . . | .  .  . . | .  . . .
+;;; .  . . . | .  .  . . | .  .  . . | .  . . .
+;;; M  . . . | Mm .  . . | .  .  . . | .  . . .
+;;; .  . . . | Nm Mm . . | .  .  . . | .  . . .
+;;; Nm . . . | .  .  . . | Nm .  . . | .  . . .
+;;; .  . . . | .  .  . . | .
+;;;
+;;; Chord + timing changes (format is chord + beat count + occurances):
+;;;
+;;; Ab   5  -> Eb   3
+;;; Ab   8  -> Eb   1
+;;; Ab   8  -> Fm   4
+;;; Ab   8  -> Fmin 4
+;;; C    4  -> F    4
+;;; Cm   15 -> Ab   8
+;;; Cm   4  -> Eb   1
+;;; Cm   4  -> F    4 (x5)
+;;; Cm   8  -> Ab   8
+;;; Eb   1  -> F    3
+;;; Eb   3  -> Cm   8
+;;; Eb   4  -> G    4
+;;; F    3  -> Cm   8
+;;; F    4  -> Ab   4
+;;; F    4  -> Ab   8
+;;; F    4  -> C    4
+;;; F    4  -> Cm   4 (x6)
+;;; Fo   4  -> F    4
+;;; Fm   4  -> F    4
+;;; G    4  -> F    4
+;;; 
+;;; Beignning: empty 9 -> Cm 15
+;;; End:       Ab    8 -> F  17
+;;;
+;;; Converted to modes:
+;;;
+;;; (VI  5)  -> (III 3)
+;;; (VI  8)  -> (III 1) (iv  4) (IVo 4)
+;;; (I   4)  -> (IV  4)
+;;; (i   24) -> (VI  8)
+;;; (i   4)  -> (III 1) (IV  4) (IV  4) (IV  4) (IV  4) (IV  4)
+;;; (i   8)  -> (VI  8)
+;;; (III 1)  -> (IV  3)
+;;; (III 3)  -> (i   8)
+;;; (III 4)  -> (V   4)
+;;; (IV  3)  -> (i   8)
+;;; (IV  4)  -> (VI  4) (VI  8) (I   4) (i   4) (i   4) (i   4) (i   4) (i   4) (i   4)
+;;; (IVo 4)  -> (IV  4)
+;;; (iv  4)  -> (IV  4)
+;;; (V   4)  -> (IV  4)
 
 ;;; Setup from LFE
 ;;;
@@ -21,6 +129,7 @@
 ;;; Setup from Extempore
 ;;;
 (sys:load "/Users/oubiwann/lab/lfe/undertone-presentations/codebeam-america-2021/demos/init.xtm")
+(sys:load "/Users/dmcgreggor/lab/lfe/undertone-presentations/codebeam-america-2021/demos/init.xtm")
 (begin (pm_print_devices) (println))
 
 ;; Setup Piano
@@ -28,11 +137,10 @@
 (define *midiout* (pm_create_output_stream primary-midi-device-id))
 ;; MIDI channel 1
 (define midi-channel 0)
+(define midi-off 0)
+(define midi-on 127)
 
-(*metro* 'set-tempo 84)
-
-(define vols '(20 40 50 60 70))
-(define primary-vols '(50 60 70 75))
+(*metro* 'set-tempo 108)
 
 (define beats-per-measure 2)
 (define note-timing 4)
@@ -42,163 +150,153 @@
 (define key c0)
 (define major '^)
 (define minor '-)
-(define minor-dur 72)
-(define major-dur 48)
 (define mode minor)
-(define primary-degrees '(i v))
 
-(define hhgg-intro-progression
-
-;; Manually change keys
-(begin
-  (set! mode major)
-  (set! key eb0)
-  (define seq-notes-main seq-notes-major))
-(begin
-  (set! mode minor)
-  (set! key c0)
-  (define seq-notes-main seq-notes-minor))
+(define triad
+  (lambda (root name)
+    (cond ((eq? name 'I) (pc:diatonic root '^ 'i))
+          ((eq? name 'i) (pc:diatonic root '- 'i))
+          ((eq? name 'III) (pc:diatonic root '^ 'iii))
+          ((eq? name 'IV) (pc:diatonic root '^ 'iv))
+          ((eq? name 'IVo) (ivl:transpose (car (pc:diatonic root '^ 'iv)) '(0 3 6)))
+          ((eq? name 'iv) (pc:diatonic root '- 'iv))
+          ((eq? name 'V) (pc:diatonic root '^ 'v))
+          ((eq? name 'VI) (pc:diatonic root '^ 'vi))
+          ((eq? name 'vi) (pc:diatonic root '- 'vi)))))
 
 ;; Allowed transitions
-(define trans-1 '((i iv)
-                  (iv i)
-                  (vi iv)
-                  (viio i)))
+(define trans '(((I   4)  (IV  4))
+                ((i   24) (VI  8))
+                ((i   4)  (III 1) (IV 4) (IV 4) (IV 4) (IV 4) (IV 4))
+                ((i   8)  (VI  8))
+                ((III 1)  (IV  3))
+                ((III 3)  (i   8))
+                ((III 4)  (V   4))
+                ((IV  3)  (i   8))
+                ((IV  4)  (VI  4) (VI 8) (I 4) (i 4) (i 4) (i 4) (i 4) (i 4) (i 4))
+                ((IVo 4)  (IV  4))
+                ((iv  4)  (IV  4))
+                ((V   4)  (IV  4))
+                ((VI  4)  (i   4))
+                ((VI  5)  (III 3))
+                ((VI  8)  (III 1) (iv 4) (IVo 4))))
 
-(define trans-2 '((i iv vi)
-                  (iv i)
-                  (vi iv)
-                  (viio i)))
+(define initial-degree '(i 24))
 
-(define trans-3 '((i iv vi)
-                  (iv i viio)
-                  (vi iv)
-                  (viio i)))
-
-(define trans-4 '((i iv vi)
-                  (ii viio)
-                  (iv i viio)
-                  (vi iv)
-                  (viio i)))
-
-
-(define vol-trans '((20 20 40 50)
-                    (40 20 40 50)
-                    (50 20 40 50 60 70)
+(define vol-trans '((40 40 50)
+                    (50 40 50 60)
                     (60 40 50 60 70)
-                    (70 50 60 70 75)
-                    (75 70 70 80)
-                    (80 70 75)))
+                    (70 50 60 70 80)
+                    (80 60 70 80 90)
+                    (90 70 80 90)))
+
+(define dynamic-vol-trans '((30 40 50 60)
+                            (40 30 50 60 70)
+                            (50 30 40 60 70)
+                            (60 40 50 70)
+                            (70 50 60 80)
+                            (80 60 70)
+                            (90 70 80)))
+
+(define timings '((1/2 1/2 1/2 1/4 1)
+                  (1/4 1/4 1/4 1/8 1/2)
+                  (1/8 1/8 1/8 1/4 1/2)
+                  (1 1 1 1/2 1/2 1/2 2)
+                  (2 2 1 1/2)))
 
 (define initial-volume 50)
 
-;;(define seq-notes-major (list eb3 bb3 ab3 eb4 g3 c4 g3 bb3))
-;;(define seq-notes-main seq-notes-major)
-
-(define sequencer-running? #f)
-(define seq-notes-major (list eb3 eb3 bb3 ab3 eb4 ab3 c4 bb3))
-(define seq-notes-minor (list c3 c3 g3 eb3 c4 eb3 g3 eb3))
-(define seq-notes-main seq-notes-minor)
-(define seq-notes seq-notes-minor)
-(define seq-notes-timing 1/4)
-(define seq-vol initial-volume)
-
-(define sequencer
-  (lambda (beat dur nlst vol-mod)
-    (set! sequencer-running? #t)
+(define play-note
+  (lambda (beat dur note vol)
     (mplay *midiout*
-           (car nlst)
-           (* vol-mod seq-vol)
+           note
+           ;;vol
+           (random (cdr (assoc vol dynamic-vol-trans)))
            dur
-           midi-channel)
-    (if (null? (cdr nlst))
-        (callback (*metro* (+ beat (* 1.0 dur)))
-                  'sequencer
-                  (+ beat dur)
-                  seq-notes-timing
-                  seq-notes
-                  1.0)
-        (callback (*metro* (+ beat (* 1.0 dur)))
-                  'sequencer
-                  (+ beat dur)
-                  seq-notes-timing
-                  (cdr nlst)
-                  0.5))))
+           midi-channel)))
+
+(define play-melody
+  (lambda (beat max-dur dur notes vol total-dur)
+    (let* ((total-dur (+ total-dur dur))
+           (next-play (+ beat dur))
+           (note (random notes)))
+      (if (< total-dur max-dur)
+          (begin
+            ;; Either play a note or rest
+            (if (> (random) 0.25)
+                (play-note beat dur note vol))
+            (callback (*metro* next-play)
+                      'play-melody
+                      next-play
+                      max-dur
+                      (random (cdr (assoc dur timings)))
+                      notes
+                      (random (cdr (assoc vol vol-trans)))
+                      total-dur))))))
+
+(define play-chords
+  (lambda (beat dur chord vol)
+    (for-each (lambda (note)
+                (play-note beat dur note vol))
+              chord)))
+
+(define play-arppegio
+  (lambda (beat max-dur notes vol total-dur)
+    (let* ((dur 1)
+           (total-dur (+ total-dur dur))
+           (next-play (+ beat dur))
+           (note (car notes))
+           (rest (cdr notes)))
+      (if (< total-dur max-dur)
+          (begin
+            (play-note beat dur note vol)
+            (callback (*metro* next-play)
+                      'play-arppegio
+                      next-play
+                      max-dur
+                      (append rest (list note))
+                      (random (cdr (assoc vol dynamic-vol-trans)))
+                      total-dur))))))
 
 (define progression
-  (lambda (beat dur durs k m d l h npc vol)
-    (let ((adj-dur (if (member d primary-degrees)
-                       (random (list (* 2 dur) (* 4 dur)))
-                       dur))
-          (chord (pc:make-chord l h npc (pc:diatonic k m d))))
-      (println 'Selected: d)
-      (set! seq-vol (random (cdr (assoc vol-trans vol))))
-      ;; After we've played in Cm for a while, switch Eb
-      (if (and (equal? mode minor) (>= durs minor-dur))
-          (begin
-            (set! durs 0)
-            (set! mode major)
-            (set! key eb0)
-            (set! seq-notes-main seq-notes-major)
-            (println 'Key 'change: 'Cm '--> 'Eb)))
-      ;; After a shorter time in Eb, go back to Cm
-      (if (and (equal? mode major) (>= durs major-dur))
-          (begin
-            (set! durs 0)
-            (set! mode minor)
-            (set! key c0)
-            (set! seq-notes-main seq-notes-minor)
-            (println 'Key 'change: 'Eb '--> 'Cm)))
-      ;; Start the sequencer if it's not running (separate function; see above)
-      (if (not sequencer-running?)
-          (sequencer (*metro* 'get-beat beats-per-measure) seq-notes-timing seq-notes 1.0)
-          ;; Play different sequences, ranges, & volumes for different degrees / modes
-          (cond ((member d '(i vi))
-                 (set! seq-notes seq-notes-main))
-                ((equal? d 'viio)
-                 (pc:make-chord (- l 12) (- h 24) 2 (pc:diatonic k m d)))
-                (else
-                 (set! seq-notes (pc:make-chord (- l 12) h 5 (pc:diatonic k m d))))))
-      ;; Play the piano's chords
-      (for-each (lambda (note)
-                  (mplay *midiout*
-                         note
-                         vol
-                         adj-dur
-                         midi-channel))
-                chord)
+  (lambda (beat degree-dur k m l h npc vol)
+    (let* ((d (car degree-dur))
+           (dur (cadr degree-dur))
+           (tri (triad k d))
+           (chord (pc:make-chord l h npc tri))
+           (melody (pc:make-chord (+ l 12) (+ h 24) 12 tri)))
+      (println 'Degree/duration: degree-dur)
+      (println (assoc degree-dur trans))
+      ;; Reset the sustain
+      (send-midi-cc (now) *midiout* 64 midi-off midi-channel)
+      (send-midi-cc (now) *midiout* 64 midi-on midi-channel)
+      ;; Play the piano's bass notes
+      (if (> (random) 0.25)
+          (play-chords beat dur chord vol)
+          (play-arppegio beat dur chord vol 0))
+      ;; Play the melody
+      (play-melody beat dur 1 melody vol 0)
+      
       ;; Allow different chord transitions at different times
-      (let* ((s (sinr 0 1 0.005))
-             (trans (cond ((>= s 0.3) trans-1)
-                          ((> s -0.7) trans-2)
-                          (else (if (equal? mode minor) trans-3 trans-4))))
-             (hi (if (>= s 0.3)
-                     high
-                     (+ high 12)))
-             (next-degree (random (cdr (assoc d trans))))
-             (next-vol (random (cdr (assoc vol-trans vol)))))
-        (print 'Transitions: trans "--> ")
+      (let* ((next-degree (random (cdr (assoc degree-dur trans))))
+             (next-vol (random (cdr (assoc vol vol-trans)))))
         ;; Set up the next chunk of the progression to be played
-        (callback (*metro* (+ beat (* 1 adj-dur)))
+        (callback (*metro* (+ beat (* 1 dur)))
                   'progression
-                  (+ beat adj-dur)
-                  note-timing
-                  (+ durs adj-dur)
+                  (+ beat dur)
+                  next-degree
                   key
                   mode
-                  next-degree
-                  low
-                  hi
+                  l
+                  h
                   notes-per-chord
                   next-vol)))))
 
 ;; Start the progression
 (progression (*metro* 'get-beat beats-per-measure)
-             note-timing
-             0
+             initial-degree
              key
              mode
-             'i
              low
              high
              notes-per-chord
@@ -208,9 +306,52 @@
 (define progression
   (lambda (beat dur total-dur degree low high) #t))
 
-;; Stop the sequencer
-(define sequencer
-  (lambda (beat dur nlst) #t))
 
-;; If restarting, be sure to reset the sequencer flag:
-(set! sequencer-running? #f)
+
+
+
+
+;;; More triads than what are supported in Extempore
+
+(define chords
+  (list
+   (list c3 eb3 gb3)  ; dim
+   (list c3 eb3 g3)   ; min
+   (list c3 e3  g3)   ; maj
+   (list c3 e3  g#3)  ; aug
+   (list c3 d3  g3)   ; sus4
+   (list c3 f3  g3)   ; sus2
+   (list c3 f#3 g3)   ; lyd
+   (list c3 db3 gb3)  ; loc
+   (list c3 f3  gb3)  ; sus4b5
+   (list c3 db3 g3)   ; phr
+    ))
+
+(define prog
+  (lambda (beat dur vol chds)
+      ;; Play the piano's chords
+    (for-each
+     (lambda (note)
+       (mplay *midiout*
+              note
+              vol
+              dur
+              midi-channel))
+     (car chds))
+    
+    (callback (*metro* (+ beat (* 1 dur)))
+              'prog
+              (+ beat dur)
+              dur
+              vol
+              (cdr chds))))
+
+;; Start the progression
+(prog (*metro* 'get-beat beats-per-measure)
+      8
+      70
+      chords)
+
+;; Stop the progression
+(define prog
+  (lambda (beat dur vol) #t))
