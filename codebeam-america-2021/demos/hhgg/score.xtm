@@ -128,52 +128,20 @@
 
 ;;; Setup from Extempore
 ;;;
-(sys:load "/Users/oubiwann/lab/lfe/undertone-presentations/codebeam-america-2021/demos/init.xtm")
-(sys:load "/Users/dmcgreggor/lab/lfe/undertone-presentations/codebeam-america-2021/demos/init.xtm")
+(define base-dir "/Users/oubiwann/lab/lfe/undertone-presentations/codebeam-america-2021/demos/")
+(define base-dir "/Users/dmcgreggor/lab/lfe/undertone-presentations/codebeam-america-2021/demos/")
+
+(sys:load (string-append base-dir "init.xtm"))
+(sys:load (string-append base-dir "hhgg/defaults.xtm"))
+(sys:load (string-append base-dir "hhgg/funs.xtm"))
+
 (begin (pm_print_devices) (println))
 
 ;; Setup Piano
 (define primary-midi-device-id 4) ; MIDI General to DAW running Ravenscroft Piano
 (define primary-midi-device-id 2) ; MIDI General to DAW running Ravenscroft Piano
 (define *midiout* (pm_create_output_stream primary-midi-device-id))
-;; MIDI channel 1
-(define midi-channel 0)
-(define midi-off 0)
-(define midi-on 127)
-(define midi-sustain 64)
 
-(*metro* 'set-tempo 108)
-
-(define beats-per-measure 2)
-(define note-timing 4)
-(define low c2)
-(define high c4)
-(define notes-per-chord 5)
-(define notes-per-melody 12)
-(define simpler-melody 7)
-(define key-root c0)
-(define major '^)
-(define minor '-)
-(define mode minor)
-
-(define tn 1/32)
-(define sn 1/16)
-(define en 1/8)
-(define qn 1/4)
-(define hn 1/2)
-(define wn 1)
-
-(define triad
-  (lambda (root name)
-    (cond ((eq? name 'I) (pc:diatonic root major 'i))
-          ((eq? name 'i) (pc:diatonic root minor 'i))
-          ((eq? name 'III) (pc:diatonic root major 'iii))
-          ((eq? name 'IV) (pc:diatonic root major 'iv))
-          ((eq? name 'IVo) (ivl:transpose (car (pc:diatonic root major 'iv)) '(0 3 6)))
-          ((eq? name 'iv) (pc:diatonic root minor 'iv))
-          ((eq? name 'V) (pc:diatonic root major 'v))
-          ((eq? name 'VI) (pc:diatonic root major 'vi))
-          ((eq? name 'vi) (pc:diatonic root minor 'vi)))))
 
 ;; Allowed degree transitions
 (define trans
@@ -205,8 +173,6 @@
     (i VI)
     (iv IV)))
 
-(define initial-degree '(i 24))
-
 (define vol-trans
   '((40 40 50)
     (50 40 50 60)
@@ -224,28 +190,16 @@
     (80 60 70)
     (90 70 80)))
 
-;; Melody note timings
 (define timings
-  '((1/4 1/4 1/4 1/2)
-    (1/2 1/2 1/2 1/4 1 3)
-    (3/4 1/4 1/2 1 1 1)
-    (1 1 1 1 1 1 1 3/4 1/2 1/2 1/2 3/2 2 3)
-    (3/2 2 1 1 1/2 1/4)
-    (2 4 2 2 2 2 1 1 1 3/4 1/2 3/2)
-    (3 1 1 1 1/2 1/4)
-    (4 4 4 4 3 2)))
-
-;; Melody note timings
-(define timings
-  '((1/8 1/8 1/4 1/4 1/2 1/2)
-    (1/4 1/4 1/4 1/2)
-    (1/2 1/2 1/2 1/4 1)
-    (3/4 1/4 1/2 1 1 1)
-    (1 1 3/4 1/2 1/2 1/2 3/2 2)))
+  '((1/2 1/2 1 1)
+    (3/4 1/2 1 1)
+    (1 1/2 1 1 3/2 2)
+    (3/2 1/2 1 1)
+    (2 1/2 1 1)))
 
 ;; Melody transitions from the original
 (define melody-transitions
-  '(
+  (list
 
     (ab2 eb3)
     (ab3 ab3 c3 c4 f4)
@@ -260,34 +214,14 @@
     
     ))
 
-(define initial-volume 50)
-
-(define uniq
-  (lambda (lst)
-    (cond ((null? lst)
-           '())
-          ((member (car lst) (cdr lst))
-           (uniq (cdr lst)))
-          (else
-           (cons (car lst) (uniq (cdr lst)))))))
-
-(define play-note
-  (lambda (beat dur note vol)
-    (mplay *midiout*
-           note
-           ;;vol
-           (random (cdr (assoc vol dynamic-vol-trans)))
-           dur
-           midi-channel)))
-
 (define play-melody
   (lambda (beat max-dur dur notes vol last-note total-dur)
     (let* ((total-dur (+ total-dur dur))
            (next-play (+ beat dur))
            (transition-notes (assoc last-note melody-transitions))
-           (note (if transition-notes
-                     (random (cdr transition-notes))
-                     (random notes)))
+           (note (if (eq? transition-notes #f)
+                     (random notes)
+                     (random (cdr transition-notes))))
            (play-type (random)))
       (if (< total-dur max-dur)
           (begin
@@ -316,7 +250,7 @@
                (lambda (_)
                  (play-note beat (/ dur 3) note vol))
                '(1 2 3)))
-             ;; rest
+             ;; play a rest (no note)
              (#t 'play-rest))
             (callback (*metro* next-play)
                       'play-melody
@@ -327,12 +261,6 @@
                       (random (cdr (assoc vol vol-trans)))
                       note
                       total-dur))))))
-
-(define play-chord
-  (lambda (beat dur chord vol)
-    (for-each (lambda (note)
-                (play-note beat dur note vol))
-              chord)))
 
 (define play-arpeggio
   (lambda (beat max-dur notes vol total-dur)
@@ -376,9 +304,6 @@
           (#t
            (pc:make-chord (+ lo 24) (+ hi 36) notes-per-melody base-triad)))))
 
-(println (length '(1 2 3 4 5)))
-(println (member 4 '(1 2 3)))
-
 (define progression
   (lambda (beat degree-dur vol)
     (let* ((vol-mod (sinr 0 1 0.005))
@@ -394,7 +319,7 @@
       (if (< (length chord) 4)
           (play-chord beat dur chord vol)
           (if (> (random) 0.3)
-              (play-chords beat dur chord vol)
+              (play-chord beat dur chord vol)
               (play-arpeggio beat dur chord vol 0)))
       ;; Play the melody
       (play-melody beat dur 1 melody vol #f 0)
