@@ -854,6 +854,21 @@ TBD
 
 ---
 
+## Demo
+
+Hi-res video of demo available here:
+
+https://www.youtube.com/watch?v=neSGoz2F1d8
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
 ## What's Next for undertone?
 
 <img src="undertone-github.jpg" width="80%" /> 
@@ -891,6 +906,21 @@ So what's next for undertone? I have created tickets for efforts such as:
 
 Quick update on what we've covered so far ...
 
+{{% /note %}}
+
+---
+
+## Credits
+
+[Ent drawing](https://talbotjenkins.wixsite.com/talbotjenkins/miscellaneous?lightbox=dataItem-jpkmxxse) by Talbot Jenkins.
+
+<br />
+
+Beginnig of first piece in demo adapted for Piano, based upon "Journey of the Sorcerer" by Bernie Leadon of The Eagles.
+
+
+[//]: Speaker-Notes:
+{{% note %}}
 {{% /note %}}
 
 ---
