@@ -16,7 +16,16 @@ pwd:
 	@echo $(PWD)
 
 img:
-	@docker build -t $(TAG) .
+	@rm -rf theme
+	@cp -r ../lambda-days-2021/theme .
+	@rm -rf content/arch
+	@cp -r ../lambda-days-2021/content/* content/
+	@cd docker && rm -rf archetypes static themes
+	@cp -r ../lambda-days-2021/docker/archetypes docker/
+	@cp -r ../lambda-days-2021/docker/static docker/
+	@cp -r ../lambda-days-2021/docker/themes docker/
+	@find . -type f | egrep '#|.*\..*~' | xargs rm
+	docker build -t $(TAG) .
 
 run: img
 	@docker run -it -p $(PORT):$(PORT) \
@@ -27,7 +36,7 @@ run: img
 	server
 
 build: img
-	@docker run \
+	docker run \
 	-v $(CONTENT_DIR):/src/content \
 	-v $(THEME_DIR):/src/assets \
 	-v $(OUTPUT_DIR):/src/public \
@@ -41,11 +50,11 @@ help: img
 	@docker run -it -p $(PORT):$(PORT) -v $(CONTENT_DIR):/src/content $(TAG) \
 	help
 
-new: build
+new: img
 	@docker run -it -p $(PORT):$(PORT) -v $(CONTENT_DIR):/src/content $(TAG) \
 	new site $(PRES_NAME)
 
-shell: build
+shell: img
 	@docker run -it \
 	-v $(CONTENT_DIR):/src/content \
 	-v $(THEME_DIR):/src/assets \
