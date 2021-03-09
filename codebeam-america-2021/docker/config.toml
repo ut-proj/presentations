@@ -1,6 +1,6 @@
-baseURL = "https://undertone.lfe.io/presentations/lambda-days-2021/"
+baseURL = "https://undertone.lfe.io/presentations/codebeam-america-2021/"
 languageCode = "en-us"
-title = "Sound on BEAM: Music in the Land of Distributed Lisp"
+title = "Sound on BEAM: Music in the Land of Distributed Lisp, Part II"
 theme = "reveal-hugo"
 
 [outputFormats.Reveal]
