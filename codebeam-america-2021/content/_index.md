@@ -10,11 +10,26 @@ src = "logo-v6.svg"
 
 [//]: Speaker-Notes:
 {{% note %}}
+
 Hello, and welcome to my talk!
 
-My name is Duncan McGreggor, and today I'm going to share with you a little
-of Lisp Flavoured Erlang, some Extempore, music synthesis and
-recording, and how they all come together in the undertone project.
+My name is Duncan McGreggor -- today I'm giving the second half of the talk
+that I gave at Lambda Days, just a few weeks ago.
+
+{{% /note %}}
+
+---
+
+# ( Part II )
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+As with that one, I'm going to share with you a little Lisp Flavoured Erlang,
+Extempore, and generative music. 
+
+However, in this talk I will be focusing much more upon the my needs as an
+amatuer musician ...
 
 {{% /note %}}
 
@@ -23,22 +38,28 @@ recording, and how they all come together in the undertone project.
 ## Overview
 
 * Introduction
-* undertone
-* Demo
+* undertone and Its Use Cases
 * Architecture
-* Use Cases
+* Supervision Trees
+* Clients and Servers
+* External Processes, Ports, and `exec`
 * Languages
-* FP, Global/Mutable State, and I/O
-* Sound synthesis as functional programming
-* Systems control for music
-* What's next for undertone
-* Final Q & A
+* A Custom REPL
+* Demo / Performance / Walkthrough
+* What's Next for undertone
+* Q & A
 
 [//]: Speaker-Notes:
 {{% note %}}
-These are the topics I hope to cover.
 
-This is a lot, but we should get through most of it!
+... in particular, my need for a reliable soft real-time
+system capable of speaking multiple protocols, of creating servers or 
+connecting to them and of being able to continue operations, even
+as parts of the system encounter unrecoverable errors and must be restarted.
+
+a smattering of OTP, some Extempore, and generative
+music -- and how all these come together in the undertone project.
+
 {{% /note %}}
 
 ---
@@ -52,9 +73,9 @@ This is a lot, but we should get through most of it!
 
 [//]: Speaker-Notes:
 {{% note %}}
-And here's a little bit about me ...
 
-... but we can skip past that ;-)
+Here's are some superficial bullet points about me ...
+
 {{% /note %}}
 
 ---
@@ -65,15 +86,14 @@ And here's a little bit about me ...
 * 9 or 10 yo - Formal piano lessons, casual guitar
 * 14 yo - First synthesizer (analog Korg PolySix)
 * 16 yo - Performed in a chamber music group
-* 22 yo - Assembled a home recording studio
-* 25 yo - Stopped playing music, replaced with physics / maths studies ... then career
+* 25 yo - Stopped music; replaced with physics/maths ... then career
 * 48 yo - Started playing again
 
 [//]: Speaker-Notes:
 {{% note %}}
-... and some snippets from my brushes with music, most of which is in the relatively distant past.
 
-In point of fact, the last musical performance I gave was as the pianist in a chamber music quartet when I was 17. 
+... and some more, relating to music.
+
 {{% /note %}}
 
 ---
@@ -84,161 +104,119 @@ In point of fact, the last musical performance I gave was as the pianist in a ch
 <img src="dm_as_1.jpg" />
 
 {{% note %}}
-Between then and 2014, when I was 42, I met Andrew Sorensen pictured here after his Extempore live-coding performance at OSCON.
 
-(And yes, that dude with the short hair is me ;-))
+About 6 1/2 years ago at OSCON 2014, I met Andrew Sorensen -- pictured here -- after his Extempore live-coding performance at OSCON.
+
+(Yeah, that's me -- the one neaest him).
 
 Andrew and I talked about live coding, my interest in using LFE/OTP along with Extempore, and if I remember correctly, he mentioned conversations that he and Joe Armstrong had about Extempore and Erlang and some potential collaboration.
+
+I started using Extempore immediately after Andrew's performnace, when he shared his keynote code with me. I picked it up again last year ...
 {{% /note %}}
 
 ---
 
 ## Re-entering the Musical World
 
-<img src="dm_as_2.jpg" />
-
-{{% note %}}
-He then shared his performance code with me, I created a variation, blogged about it, and thus began a slow-reignition of my passion for music.
-
-As a side note: A few years ago, I picked up the guitar again, and more recently have been relearning piano and keyboards. I'm studying music theory, and even taking some online music courses. It has been fantastic and much needed outlet.
-
-{{% /note %}}
-
----
-
-## Then ... Nothing
-
-{{% note %}}
-Later in chatting with members of the LFE community, we talked briefly about exploring sound synthesis libraries in LFE, but none of us had the time or interest to take things much further.
-
-Then, years later, along comes this gem of a blog post from Erlang Solutions ...
-
-{{% /note %}}
-
----
-
-## But!
-
 <img src="sound_of_erlang.jpg" /> 
 
 {{% note %}}
 
-... by Aleksander Lisiecki
+... after Aleksander Lisiecki's blog post which covered sound generation in Erlang.
 
-and upon seeing this, I immediately ...
-{{% /note %}}
-
----
-
-## And ...
-
-<img src="sound-of-lfe1.jpg" width="80%" /> 
-
-{{% note %}}
-
-... did this ...!
-
-{{% /note %}}
+I ported his code to LFE, and that same day, created the undertone project.
 
 ---
 
-## And?
+## Wherefore undertone?
 
-<img src="sound-of-lfe2.jpg" width="80%" /> 
+<img src="undertone-logo-v1.svg" width="60%" style="border:none; background: none; box-shadow: none;"/> 
 
 {{% note %}}
 
-... and this :-)
+undertone came about due to my need to control synthsizers -- both hardware and software -- and run services. I started by reading everything I could on Erlang and music, retracing Joe Armstrong's steps from the mid-2000s up until a few short years ago. 
 
+One of the first features that landed in undertone was support for Open Sound Control (or OSC). This was done so that I could run several of Joe's code samples from within a structured project using a custom backend for SuperCollider.
 
-In essence, porting the code in that blog post to LFE.
+Ultimately, though, I became frustrated by my admittedly subjective perception that SuperCollider seems to lack an element of musicality -- a feeling I _did_ get from Extempore.
+
+Within a few days I'd added a new backend for undertone, one that allowed me to run Extempore code from LFE. In so doing, I feel like I finished a conversation started between Joe and Andrew years ago.
+
 {{% /note %}}
 
 ---
 
 ## Wherefore undertone?
 
-<img src="undertone-github.jpg" width="80%" /> 
+<img src="undertone-logo-v1.svg" width="60%" style="border:none; background: none; box-shadow: none;"/> 
 
 {{% note %}}
 
-The path from there to undertone was mostly straight-forward: I wanted to do more than generate tones. I wanted to control synthsizers and run services ... in short, make music. I read everything I could on Erlang and music, retracing Joe Armstrong's steps from the mid-2000s up until a few short years ago. 
+The real "why" behind undertone isn't a battle of backends ...
 
-I implemented basic support for SuperCollider, upon which much of his work depended, but was frustrated by the lack of musicality in that particular system. At which point I returned to Extempore, and began integrating it into undertone as well.
+the heart of the matter is what it would be used for.
+
+In my practice sessions with guitar and synthesizers, I wanted to be able to quickly write a few lines of code for some ambient backing sounds, or chord progressions against which I could practice scales, or experiment with intervals and counterpoint.
+
+After so long in the software industry, I'm just much, much faster at writing code than sitting
+down with a sheaf of blank staves and writing notes.
+
+There is an implicit answer here, to the question of "Why LFE"? : if I'm going to be writing code in my spare time, I need it to be in a language that I love and have fun using.
+
 {{% /note %}}
 
 ---
+
+## Wherefore undertone?
+
+* Create music in my preferred language
+* Monitoring and automatically restarting OS processes
+* Speak to Open Sound Control servers (i.e., controlling faders on software consoles/mixers)
+* Potentially host my own OSC servers
+* Send TCP packages to the Extempore compiler service
+* Automtically reconnect (with backoff support) to required services
+* Be able to restart any of these components in the event of partial or complete system failure
+
+{{% note %}}
+
+Above and beyond that, thgough, I needed to be able to control external processes running on the operating system. restarting them as necessary. There are a lot of features listed here, but that one is biggie for me. I did a lot of experimentation with different MIDI drivers, software synthesizers, VST plugin hosts, and the like, and ended up having various applications or their supporting processes, crash.
+
+Sometimes days of work -- where I'd invested my time in a long chain of trial and error -- were lost. All because just one component I'd been experimenting with was unstable or wasn't designed to do the crazy things I was asking of it.
+
+And to that point ...
+
+{{% /note %}}
+
+---
+
+## Wherefore undertone?
+
+Also:
+
+* Maintain multiple, separate state contexts
+* Support a familiar workflow (a REPL!)
+* Provide basic session management (ETS + a handful of functions)
+
+{{% note %}}
+
+I also needed to manage state in a sane manner. As you are all assuradly well aware, the points above and those in the previous slide are features readily available in OTP or in the BEAM languages which offer Erlang interoperability.
+
+And it is for all these reasons that undertone was born, created in LFE, and built upon the foundation of Erlang and OTP.
+
+{{% /note %}}
+
+---
+
+{{< slide transition="none" >}}
 
 ## What is undertone?
 
-<img src="teaser_video_daw.jpg" />
+<img src="arch/erlang-node-diagram2.jpg" width="80%" style="border:none; background: none;"/> 
+
 
 {{% note %}}
-I added enough functionality that I could generate a demo song with 9 seperate tracks of synthesizer being played. All of those were created using undertone. The end result was featured in the Lambda Days "teaser" video for this talk.
-
-There's a lot to unpack in that work, and a brief overview of the architecture would go a long way toward giving you a good idea what undetone really is.
-
-But before that ...
-{{% /note %}}
 
 
----
-
-## Demo Time
-
-<img src="lol-space-music.jpg" />
-
-Let's have some space music!
-
-[//]: Speaker-Notes:
-{{% note %}}
-How about some music?
-{{% /note %}}
-
----
-
-## Demo Time
-
-<img src="lol-space-music.jpg" />
-
-1. Creating a "space orchestra" with note transformations and multiple channels: see [the teaser video](https://www.youtube.com/watch?v=cfpAsvHW2i4&t=56s)
-
-[//]: Speaker-Notes:
-{{% note %}}
-The demo I had originally planned on showing you would have been a presentation of the code that was used to create the music in that teaser video.
-
-Honestly, though, that's pretty boring: some manually defined chord definitions, some elementary transformations of lists using map and fold, etc.
-{{% /note %}}
-
----
-
-## Demo Time
-
-<img src="lol-space-music.jpg" />
-
-2. Using `xt.midi:cc-ramp` to simulate turning the knobs on an analog synth: see [the Dallas/Fort Worth BEAMers Meetup demo](https://www.youtube.com/watch?v=DI3UcPAdayo)
-
-[//]: Speaker-Notes:
-{{% note %}}
-Then I decided to add support for MIDI control codes, so I could show you how LFE can control analog synthesizers like the classic minimoog, radically changing the sounds even without adjusting the notes. 
-
-After updating undertone for this and creating a demo, I presented to the DFW Beamers ... and decided to also include it in today's talk as a bonus. Here it is:
-
-But, I still wasn't satisfied ...
-
-{{% /note %}}
-
----
-
-## Demo Time
-
-<img src="lol-space-music.jpg" />
-
-3. Towards generative music with Markov chains and chords: [HD video + sound]() (posting on Twitter now ...)
-
-[//]: Speaker-Notes:
-{{% note %}}
-I had promised to show conference attendees something with generative music, and these demos kept missing that mark. So I created a new piece with new code, and that's what I'm going to show you next :-)
 
 {{% /note %}}
 
@@ -305,6 +283,28 @@ Now, if we zoom in ...
 
 ---
 
+## Architecture
+
+<img src="arch/system-context-bevin.jpg" style="width: 100%" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+Now, if we zoom in ...
+{{% /note %}}
+
+---
+
+## Architecture
+
+<img src="arch/system-context.jpg" style="width: 100%" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+Now, if we zoom in ...
+{{% /note %}}
+
+---
+
 {{< slide transition="none" >}}
 
 ## Architecture
@@ -321,7 +321,7 @@ Now, if we zoom in ...
  
 ## Architecture
 
-<img src="arch/containers.jpg" style="width: 100%" />
+<img src="arch/containers2.jpg" style="width: 100%" />
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -336,7 +336,7 @@ The "container" view of undertone shows which components are connected to each o
 
 ## Architecture
 
-<img src="arch/containers.jpg" style="width: 100%" />
+<img src="arch/containers2.jpg" style="width: 100%" />
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -349,7 +349,7 @@ The grey box in the upper left is where the first demo took place. All the comma
 
 ## Architecture
 
-<img src="arch/containers.jpg" style="width: 100%" />
+<img src="arch/containers2.jpg" style="width: 100%" />
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -369,7 +369,7 @@ That REPL -- while written in LFE -- has its own commands separate from the LFE 
 
 ## Architecture
 
-<img src="arch/containers.jpg" style="width: 100%" />
+<img src="arch/containers2.jpg" style="width: 100%" />
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -384,7 +384,7 @@ In short: everything within the dashed purple border here has been written in LF
 
 ## Architecture
 
-<img src="arch/containers.jpg" style="width: 100%" />
+<img src="arch/containers2.jpg" style="width: 100%" />
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -411,62 +411,229 @@ And here's a quick textual overview of what we just covered ...
 
 ---
 
-## What Can undertone Do?
+## Progress Check
 
-<img src="ardour-daw.png" /> 
-
-[//]: Speaker-Notes:
-{{% note %}}
-In undertone, you can run functions that control a Digital Audio Workstation like the one pictured here, moving faders, endabling tracks, recording, looping -- the list goes on and on.
-{{% /note %}}
-
----
-
-## What Can undertone Do?
-
-<img src="kronos-lfe-undertone.jpg" /> <img src="model-d-lfe-undertone.jpg" />
-
-[//]: Speaker-Notes:
-{{% note %}}
-You can not only control software devices like the Moog modular synth I showed in the demo, but you
-can also control physical devices like these -- which, by the way, were genereating music written in LFE when the pictures were taken! 
-
-On the left is a Korg Kronos, and the right shows a desktop analog synth, a minimoog clone by Behringer.
-{{% /note %}}
-
----
-
-## What Can undertone Do?
-
-* Long, slow looping music in given keys, but random notes or intervals
-* Accompanyment for practice
-* Jam sessions
-* Endless, non-repeating background, ambient music
-
-[//]: Speaker-Notes:
-{{% note %}}
-Practically speaking, though, this is how _I'll_ be using undertone!
-{{% /note %}}
-
----
-
-## So Far
-
-* {{< fa check-square >}} Introduction
-* {{< fa check-square >}} undertone
-* {{< fa check-square >}} Demo
-* {{< fa check-square >}} Architecture
-* {{< fa check-square >}} Use Cases
-* Languages
-* FP, Global/Mutable State, and I/O
-* Sound Synthesis as Functional Programming
+* ✅ Introduction
+* ✅ undertone and Its Use Cases
+* ✅ Architecture
+* Supervision Trees
+* Clients and Servers
+* External Processes, Ports, and exec
+* A Custom REPL
+* Demo / Performance / Walkthrough
 * What's Next for undertone
 * Q & A
 
+{{% note %}}
+
+Quick update on what we've covered so far ...
+
+{{% /note %}}
+
+
+---
+
+## Supervision Trees
+
+<img src="treebeard-talbot-jenkins.jpg" style="width: 40%" />
 
 [//]: Speaker-Notes:
 {{% note %}}
-Okay, here's a quick refresher on what we've covered and what's left to do ... 
+
+TBD
+
+{{% /note %}}
+
+---
+
+## Supervision Trees
+
+<img src="undertone-sup.jpg" style="width: 100%" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
+## Supervision Trees
+
+<img src="undertone-sup-xt.jpg" style="width: 100%" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
+## Supervision Trees
+
+<img src="undertone-sup-bevin.jpg" style="width: 100%" />
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
+## Clients and Servers
+
+* Extempore client
+  * TCP client for sending messages to the compiler server
+  * Scheme syntax as bitstrings
+  * Started by the release
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
+## Clients and Servers
+
+* Open Sound Control clients
+  * potentially many
+  * connecting to both software and hardware
+  * e.g., digital audio workstations (DAWs) to control console faders
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
+## Clients and Servers
+
+* Open Sound Control servers
+  * none right now
+  * could create an OSC/MIDI bridge in LFE/Erlang 
+  * create a custom Raspberry Pi sound device and export OSC methods
+* erlsci/osc is UDP only
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
+## Clients and Servers
+
+* `gen_servers` for state management
+* The Extempore REPL is a simple looping server
+* The undertone backends each have their own `gen_server` that's responsible for managing the backend
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
+## External Processes & Erlang Ports
+
+* Used to use `erlang:open_port` (`spawn_executable`)
+* Switched to `exec` library (which still uses Erlang ports)
+* Extempore backend:
+  * capturing output from Extempore
+* "Bevin" backend:
+  * sending MIDI (OS process)
+  * receiving MIDI (separate OS process)
+  * stdout is captured for both and logged / parsed
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
+## Dependencies
+
+* https://github.com/erlsci/osc
+  * Forked from https://github.com/marianoguerra/erlang-osc
+  * 5-10 year old code, updated per rebar3 project best practices
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
+## Dependencies
+
+* https://github.com/lfex/tcp-client
+  * Originally based upon https://github.com/cabol/tcp_client
+  * Rewritten in LFE around `gen_statem` using https://andrealeopardi.com/posts/connection-managers-with-gen_statem/
+  * Exponential backoff from  https://github.com/ferd/backoff
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
+## Dependencies
+
+* https://github.com/saleyn/erlexec
+  * Addresses issues with terminating OS processes
+  * Keeps to the spirit of Erlang's clean Port API
+  * Used to manage 2 of 3 backends in undertone
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
+## Progress Check
+
+* ✅ Introduction
+* ✅ undertone and Its Use Cases
+* ✅ Architecture
+* ✅ Supervision Trees
+* ✅ Clients and Servers
+* ✅ External Processes, Ports, and exec
+* Languages
+* A Custom REPL
+* Demo / Performance / Walkthrough
+* What's Next for undertone
+* Q & A
+
+{{% note %}}
+
+Quick update on what we've covered so far ...
+
 {{% /note %}}
 
 ---
@@ -475,7 +642,7 @@ Okay, here's a quick refresher on what we've covered and what's left to do ...
 
 ## Erlang & LFE
 
-An example: a recursive function using pattern-matching in the function heads.
+Basics: a recursive function using pattern-matching in the function heads.
 
 #### Erlang
 
@@ -499,9 +666,73 @@ ackermann(M, N) when M > 0 andalso N > 0 ->
 
 [//]: Speaker-Notes:
 {{% note %}}
-It's probably a goot bet that most attendees at the conference are more familiar with Erlang than LFE, so here's a little comparison to help you get your bearings.
 
-This is the same funciton -- written in each -- demonstrating some basic recursion as well as pattern matching in the function heads.
+TBD
+
+{{% /note %}}
+
+---
+
+## Erlang & LFE
+
+OTP: Erlang `supervisor`
+
+```erlang
+-module('undertone.sup').
+-behaviour(supervisor).
+-export([start_link/0]).
+-export([init/1]).
+
+start_link() ->
+    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+    
+init([]) ->
+    {ok, {sup_flags(),
+          [child('undertone.server', start_link, [])]}}.
+    
+sup_flags() ->
+    #{strategy => one_for_one,
+      intensity => 3,
+      period => 60}.
+```
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
+{{% /note %}}
+
+---
+
+## Erlang & LFE
+
+OTP: LFE `supervisor`
+
+```clj
+(defmodule undertone.sup
+  (behaviour supervisor)
+  (export
+   (start_link 0)
+   (init 1)))
+   
+(defun start_link ()
+  (supervisor:start_link `#(local ,(MODULE)) (MODULE) '()))
+
+(defun init (_args)
+  `#(ok #(,(sup-flags)
+          (,(child 'undertone.server 'start_link '())))))
+  
+(defun sup-flags ()
+  `#m(strategy one_for_one
+      intensity 3
+```
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+TBD
+
 {{% /note %}}
 
 ---
@@ -550,9 +781,6 @@ Scheme:
               dur)))
 
 (midi-loop (*metro* 'get-beat 4) 1/4)
-
-(define midi-loop
-  (lambda (beat dur) #t))
 ```
 
 [//]: Speaker-Notes:
@@ -564,257 +792,68 @@ This is what most Extempore performers use -- and, in fact, is what you saw me p
 
 ---
 
-## FP in an I/O World
+## A Custom REPL
 
-A mutable, global system bent upon I/O
-
-``` scheme
-(sys:load "libs/external/portmidi.xtm")
-(pm_initialize)
-(define *midi-out* (pm_create_output_stream 3))
-
-(define midi-loop
-  (lambda (beat dur)
-    (mplay *midi-out*
-           (random (list 36 43 48 51 60 60 60 67 70 74 75))
-           (random 60 80)
-           dur 0)
-    (callback (*metro* (+ beat (* .5 dur)))
-              'midi-loop
-              (+ beat dur)
-              dur)))
-
-(midi-loop (*metro* 'get-beat 4) 1/4)
-
-(define midi-loop
-  (lambda (beat dur) #t))
-```
+<img src="xt-repl-start.jpg" width="80%" /> 
 
 [//]: Speaker-Notes:
 {{% note %}}
-In both cases developers are accessing mutable data, changing elements of the system as it runs, and using those changes to generate music. While perfectly suited for what it does, the appeal to a functional programmer is perhaps not immediately apparent.
-{{% /note %}}
 
----
-
-{{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
-
-## FP in an I/O World
-
-An LFE sequencer in undertone?
-
-<img src="Moog-modular-sequencer.jpg" />
-
-[//]: Speaker-Notes:
-{{% note %}}
-But a second or third glance might inspire such a programmer to look at a classic sequencer such as this one -- which, by the way, were based upon telephon switching hardware -- and  ...
-{{% /note %}}
-
----
-
-{{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
-
-## FP in an I/O World
-
-Yes!
-
-``` lisp
-(set opts (xt.seq:midi-opts sequence-name
-                            device-name
-                            device-id
-                            midi-channel
-                            seq1
-                            pulse1
-                            beats-per-minute
-                            beats-per-measure
-                            note-timing))
-(xt.seq:start opts)
-(xt.midi:cc-ramp (mupd opts 'cc-code (cutoff-filter-1)) 15 40 5)
-(xt.seq:set-midi-notes! (mupd opts 'notes '(c3 c3 c4  c4 a#3 g3)))
-```
-
-[//]: Speaker-Notes:
-{{% note %}}
-... use immutable data structures and all the language's vast resources to carefully manage that global state with code like this:
-
-In the first demo you sawe me calling functions such as these to start, modify, and stop a sequencer in LFE.
-{{% /note %}}
-
----
-
-## FP in an I/O World
-
-<img src="lol_clean_fp.jpg" />
-
-[//]: Speaker-Notes:
-{{% note %}}
-This approach to managing Extempore's state -- as you may well imagine -- helps a programmer to keep much better track of what's going on and how to change the system in a predictable manner.
+TBD
 
 {{% /note %}}
 
 ---
 
+## A Custom REPL
 
-## Synthesis as Functional Programming
-
-<img src="lol_beautiful_fp.jpg" />
+<img src="xt-repl-help.jpg" width="80%" /> 
 
 [//]: Speaker-Notes:
 {{% note %}}
-Next we'll touch on the topic of sound synthesis, and in particular, its fundamental concepts and how well these map to the principals of functional programming.
 
-This topic deserves a little context, though ... so let's take a scenic route
+TBD
+
 {{% /note %}}
 
 ---
 
-## The Beginnings of Sound Synthesis
+## A Custom REPL
 
-<img src="Teleharmonium1897.jpg" />
+<img src="xt-repl-sess.jpg" width="80%" /> 
 
 [//]: Speaker-Notes:
 {{% note %}}
-This is a picture of the Telharmonium or Dynamophone, and early electro-mechanical musical device created in 1896. Only the smallest portion is shown: essentially the console. The bulk of the instrument remained housed in the basement of the performance hall, connected to the console via electrical wires. And I do mean bulk: the second and third iterations of this instrument weighed 210 tonnes.
+
+TBD
+
 {{% /note %}}
 
 ---
 
-## The Beginnings of Sound Synthesis
+## A Custom REPL
 
-<img src="Theramin-Alexandra-Stepanoff-1930.jpg" width="40%"/>
+<img src="xt-repl-defun.jpg" width="100%" /> 
 
 [//]: Speaker-Notes:
 {{% note %}}
-On the other end of the spectrum was this device, the Theremin: created in the 1920s. It was this device that originally captured the imagination and electrical engineering skills of Bob Moog, eventual invetor of the Moog synthesizer. His company still manufactures Theremins today.
+
+TBD
+
 {{% /note %}}
 
 ---
 
-## The Beginnings of Sound Synthesis
-
-<img src="UnitDeltaPlus_1966.jpg" />
+## Demo!
 
 [//]: Speaker-Notes:
 {{% note %}}
-And then there was Peter Zinovieff who had this kit in his garden shed in Britain. He was the son of a Russian princess and the first private owner of PDP-8s as personal computers (he had two of them -- both used for sound synthesis). Zinovieff worked with Pink Floyd
 
-He and Bob Moog had a lot of the same ideas created independently of each other, both using voltage-controlled filters to produce sounds.
+TBD
+
 {{% /note %}}
 
 ---
-
-## The Beginnings of Sound Synthesis
-
-<img src="subtractive-synthesis.jpg" width="70%"/>
-
-[//]: Speaker-Notes:
-{{% note %}}
-By the mid-60s sound synthesis had converged upon the basics of what is now called "Subtractive Synthesis": an oscillating sound source acts as input for various filters, amplifiers, modulators, etc.
-{{% /note %}}
-
-
----
-
-## Synthesis as Functional Programming
-
-<img src="ADSR_parameters.jpg" />
-
-[//]: Speaker-Notes:
-{{% note %}}
-Here is a graphic depiction of what has become one of the foundations of sound synthesis, originally used to electronnically model the behaviour of physical musical instruments. This is a depiction of "envelope" or how a sound changes over time. It was originally implemented with a doorbell switch initating the envelope trigger event and a capacitor to gradually release the voltage associated with the musical note.
-
-In essence, then, what we have here is a function generating output -- the keypress; and then that output being transformed in a specific, repeatable manner given the state of the envelope at any given point in time.
-{{% /note %}}
-
----
-
-## Synthesis as Functional Programming
-
-<img src="basicpatch.jpg" />
-
-[//]: Speaker-Notes:
-{{% note %}}
-To provide some context, the ADSR parameters of the envelope generator are shown here in the third and second to last modules on the right, each affecting different parts of the signal chain.
-{{% /note %}}
-
----
-
-{{< slide transition="none" >}}
-
-## Synthesis as Functional Programming
-
-<img src="basicpatch.jpg" />
-
-[//]: Speaker-Notes:
-{{% note %}}
-This is a diagram from an introduction to modular synthesis on the web site synthesizer.com.
-
-It represents a very simple setup or "patch" where MIDI signals are providing the messages that generate the initial volatge.
-
-Subsequent modules in the signal chain modify that signal or are used to affect another module that will ultimately modify the total output of the system.
-{{% /note %}}
-
----
-
-{{< slide transition="none" >}}
-
-## Synthesis as Functional Programming
-
-<img src="basicpatch.jpg" />
-
-[//]: Speaker-Notes:
-{{% note %}}
-One intersting differnce between analog computing such as this and the functional programming we are more used to is the temporal element. We generally don't run into something analogous to this at the language level; rather we see this in I/O systems that change over time, such as messaging or stream processing frameworks.
-
-Of course, from the mathematical perspective, this puts us solidly in the realm of the calculus and partial differential equations.
-{{% /note %}}
-
----
-
-## Synthesis as Functional Programming
-
-<img src="synthpatch_1000.png" />
-
-[//]: Speaker-Notes:
-{{% note %}}
-For the electronically minded, here's a logical digram of the previous patch cable diagram. This should help make the point more clearly: that sound synthesis of this form is reducable to the standard mathematical approximations of electronic circuit operations, arguably deeply functional in nature, if thoroughly within the domain of I/O.
-{{% /note %}}
-
----
-
-## Synthesis as Functional Programming
-
-<img src="modular-v.jpg" />
-
-[//]: Speaker-Notes:
-{{% note %}}
-Extending the patch example I've just shown to something in practice: here is a screenshot of the same Moog modular synth I used in the demo.
-
-Note that this is a _very simple_ patch! However, despite the increasing complexity, the same principles apply ... with the various modules producing outputs that become the inputs of other modules.
-
-As you might be intuiting with the cable-crossing seen here,
-the degree to which one may apply the outputs of one module may lead to an exponential increase in complexity.
-{{% /note %}}
-
----
-
-## Synthesis as Functional Programming
-
-<img src="keith-emerson.jpg" />
-
-[//]: Speaker-Notes:
-{{% note %}}
-And could result in taking the thing to its logical extreme ...
-
-which gives us the likes of Keith Emerson from Emerson, Lake, and Palmer.
-
-His synth patches are famous for their great sounds and stunning electronic complexity. And he had a _monster_ of a custom Moog setup -- which was equally famous.
-
-Oh, what a lucky man he was ...
-{{% /note %}}
-
----
-
 
 ## What's Next for undertone?
 
@@ -835,20 +874,29 @@ So what's next for undertone? I have created tickets for efforts such as:
 
 ---
 
-## Land of Lisp
+## Progress Check
 
-Special thanks to Conrad Barski, M.D. <br />
-for his kind permission in using images from his book in this talk.
+* ✅ Introduction
+* ✅ undertone and Its Use Cases
+* ✅ Architecture
+* ✅ Supervision Trees
+* ✅ Clients and Servers
+* ✅ External Processes, Ports, and exec
+* ✅ Languages
+* ✅ A Custom REPL
+* ✅ Demo / Performance / Walkthrough
+* ✅ What's Next for undertone
+* Q & A
 
-Buy it! http://landoflisp.com/
-
-[//]: Speaker-Notes:
 {{% note %}}
+
+Quick update on what we've covered so far ...
+
 {{% /note %}}
 
 ---
 
-## Closing Q & A
+## Q & A
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -858,11 +906,12 @@ Buy it! http://landoflisp.com/
 
 #### Contact
 
-* {{< fa envelope >}} oubiwann@gmail.com
-* {{< fa fab twitter-square >}} [@oubiwann]()
-* {{< fa fab linkedin >}} [linkedin.com/in/oubiwann]()
-* {{< fa fab twitter-square >}} [@forgottentones]()
-* {{< fa fab soundcloud >}} https://soundcloud.com/forgotten-tones/tracks
+* oubiwann@gmail.com
+* [@oubiwann]()
+* https://soundcloud.com/oubiwann/tracks
+* [linkedin.com/in/oubiwann]()
+* [@forgottentones]()
+* https://soundcloud.com/forgotten-tones/tracks
 
 [//]: Speaker-Notes:
 {{% note %}}
@@ -871,187 +920,27 @@ Here's how you can reach me ...
 
 ---
 
+#### undertone Resources
+
+* https://github.com/ut-proj/undertone
+* https://undertone.lfe.io/presentations
+* https://undertone.lfe.io/book
+* [lfe.slack.com]() #algo-sound
+* http://groups.google.com/group/lfe-undertone
+* [@lfeundertone]()
+* https://www.instagram.com/lfeundertone/
+
+---
+
 #### LFE Resources
 
-* {{< fa globe >}} https://lfe.io/
-* {{< fa fab github-square >}} https://github.com/rvirding/lfe
-* {{< fa fab slack >}} [lfe.slack.com]()
-* {{< fa users >}} http://groups.google.com/group/lisp-flavoured-erlang
-* {{< fa fab twitter-square >}} [@ErlangLisp]()
+* https://lfe.io/
+* https://github.com/rvirding/lfe
+* [lfe.slack.com]()
+* http://groups.google.com/group/lisp-flavoured-erlang
+* [@ErlangLisp]()
 
 [//]: Speaker-Notes:
 {{% note %}}
 Here's where stuff is ...
-{{% /note %}}
-
----
-
-#### undertone Resources
-
-* {{< fa fab github-square >}} https://github.com/ut-proj/undertone
-* {{< fa fas book >}} https://undertone.lfe.io/book
-* {{< fa fab slack >}} [lfe.slack.com]() #algo-sound
-* {{< fa users >}} http://groups.google.com/group/lfe-undertone
-* {{< fa fab twitter-square >}} [@lfeundertone]()
-* {{< fa fab instagram >}} https://www.instagram.com/lfeundertone/
-
----
-
-{{% note %}}
-
-## Overview
-
-* Background, sound in the digital world, etc.
-* Homage: Joe Armstrong's explorations
-* Extempore vs. SuperCollider
-* Lisp Flavoured Erlang 2.0
-* Extempore in OTP
-* Making Music
-
-[//]: Speaker-Notes:
-
-
-## Background (me)
-
-* 4 yo - Messing about with Piano
-* 8 yo - Started formal piano lessons, casual guitar
-* 16 yo - Performed in a chamber music group
-* 22 yo - Assembled a home recording studio
-* 25 yo - Stopped playing music, replaced with physics / maths studies
-* 48 yo - Started playing again
-
-[//]: Speaker-Notes:
-
-
-## Terminology
-
-#### Algorithmic Composition
-
-=?=
-
-#### Generative Music
-
-[//]: Speaker-Notes:
-
-
-## Background (generative music)
-
-<ul>
-<li class="fragment">1957 - Max Mathews MUSIC-1 on the IBM 704</li>
-<li class="fragment">(1958 - LISP, also on the IBM 704)</li>
-<li class="fragment">1962 - Sekine & Hayashi on the TOSBAC</li>
-<li class="fragment">1964 - Moog & Deutsch with prototype synthesizers; Don Buchla creates the first commercial analog sequencer on the Buchla 100</li>
-<li class="fragment">1969 - Max Mathews GROOVE on a Honeywell DDP-24; Peter Zinovieff MUSYS on PDP-8s</li>
-<li class="fragment">1971 - EMS releases first digital sequencer</li>
-</ul>
-
-[//]: Speaker-Notes:
-
-
-## Background (generative music)
-
-<ul>
-<li class="fragment">1957 - Max Mathews MUSIC-1 on the IBM 704</li>
-<li class="fragment">(1958 - LISP, also on the IBM 704)</li>
-<li class="fragment">1962 - Sekine & Hayashi on the TOSBAC</li>
-<li class="fragment">1964 - Moog & Deutsch with prototype synthesizers; Don Buchla creates the first commercial analog sequencer on the Buchla 100</li>
-<li class="fragment">1969 - Max Mathews GROOVE on a Honeywell DDP-24; Peter Zinovieff MUSYS on PDP-8s</li>
-<li class="fragment">1971 - EMS releases first digital sequencer</li>
-</ul>
-
-[//]: Speaker-Notes:
-
-
-## Background (digital music)
-
-<ul>
-<li class="fragment">Early 1980s - Musical Interface Digital Interface (MIDI) standard created</li>
-<li class="fragment">1990s - Digital music recording took off</li>
-<li class="fragment">2000s - Recording on regular PCs</li>
-<li class="fragment">Early 2010s - Open Sound Control (OSC) standard created </li>
-<li class="fragment">2010s - Digital Audio Workstation (DAW) software, tube/analog emulation, live-coding</li>
-</ul>
-
-[//]: Speaker-Notes:
-
-
-## Erlang & Sound
-
-<ul>
-<li class="fragment">XXX</li>
-<li class="fragment">XXX</li>
-<li class="fragment">XXX</li>
-<li class="fragment">XXX</li>
-<li class="fragment">XXX</li>
-</ul>
-
-[//]: Speaker-Notes:
-
-
-## Extempore vs. SuperCollider
-
-<ul>
-<li class="fragment">XXX</li>
-<li class="fragment">XXX</li>
-<li class="fragment">XXX</li>
-<li class="fragment">XXX</li>
-<li class="fragment">XXX</li>
-</ul>
-
-[//]: Speaker-Notes:
-
-
-## undertone
-
-What is it good for?
-
-[//]: Speaker-Notes:
-
-
-## Review
-
-* {{< fa check-square >}} Background, sound in the digital world, etc.
-* {{< fa check-square >}} Homage: Joe Armstrong's explorations
-* {{< fa check-square >}} Extempore vs. SuperCollider
-* Lisp Flavoured Erlang 2.0
-* Extempore in OTP
-* Making Music
-
-[//]: Speaker-Notes:
-
-
-{{< slide background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png" >}}
-
-## LFE
-
-What is it?
-
-```erlang
-ackermann(0, N) ->
-  N+1;
-ackermann(M, 0) ->
-  ackermann(M-1, 1);
-ackermann(M, N) when M > 0 andalso N > 0 ->
-  ackermann(M-1, ackermann(M, N-1)).
-```
-
-```clj
-(defun ackermann
-  ((0 n) (+ n 1))
-  ((m 0) (ackermann (- m 1) 1))
-  ((m n) (ackermann (- m 1) (ackermann m (- n 1)))))
-```
-
-[//]: Speaker-Notes:
-
-
-## Don't Panic
-
-[//]: Speaker-Notes:
-
-
-## Q & A Time
-
-[//]: Speaker-Notes:
-
 {{% /note %}}
