@@ -16,6 +16,7 @@ pwd:
 	@echo $(PWD)
 
 img:
+	@mkdir -p content
 	@rm -rf theme
 	@cp -r ../lambda-days-2021/theme .
 	@rm -rf content/arch
@@ -24,6 +25,7 @@ img:
 	@cp -r ../lambda-days-2021/docker/archetypes docker/
 	@cp -r ../lambda-days-2021/docker/static docker/
 	@cp -r ../lambda-days-2021/docker/themes docker/
+	@cp -r new-content/* content/
 	@find . -type f | egrep '#|.*\..*~' | xargs rm
 	docker build -t $(TAG) .
 
