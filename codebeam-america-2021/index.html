@@ -1,0 +1,890 @@
+<!doctype html>
+<html lang="en">
+  <head>
+	<meta name="generator" content="Hugo 0.81.0" />
+    <meta charset="utf-8">
+<title>Sound on BEAM: Music in the Land of Distributed Lisp</title>
+
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/presentations/codebeam-america-2021/reveal-js/css/reset.css">
+<link rel="stylesheet" href="/presentations/codebeam-america-2021/reveal-js/css/reveal.css">
+  <link rel="stylesheet" href="/presentations/codebeam-america-2021/_.min.c4feb656081f276873de714fdc2ba28da3a91da0aae51ef49eaa48f1c9d95cd0.css" id="theme"><link rel="stylesheet" href="/presentations/codebeam-america-2021/highlight-js/atom-one-dark.min.css">
+    <link rel="stylesheet" href="/plugin/menu/menu.css">
+<script type="text/javascript" async
+        src="/plugin/menu/menu.js">
+</script>
+<script type="text/javascript" id="MathJax-script" async
+  src="/js/tex-svg-full.js">
+</script>
+
+  </head>
+  <body>
+    
+    <style>
+      #logo {
+        position: absolute;
+        top: 1%;
+        left: 1%;
+        width: 15%;
+      }
+    </style>
+    <img id="logo" src="logo-v6.svg" alt="">
+    
+    <div class="reveal">
+      <div class="slides">
+  
+
+    <section><h1 id="sound-on-beam-music-in-the-land-of-distributed-lisp">Sound on BEAM: Music in the Land of Distributed Lisp</h1>
+
+
+
+<aside class="notes"><p>Hello, and welcome!</p>
+<p>My name is Duncan McGreggor &ndash; today I&rsquo;m giving the second half of the talk
+that I gave at Lambda Days, just a few weeks ago.</p>
+</aside>
+</section><section>
+<h1 id="-part-ii-">( Part II )</h1>
+
+
+
+<aside class="notes"><p>As with that one, I&rsquo;m going to share with you a little Lisp Flavoured Erlang,
+Extempore, and generative music.</p>
+<p>However, in this talk I will be focusing much more upon the details of
+the undertone project itself, from the perspective of both a musician
+and an engineer &hellip;</p>
+</aside>
+</section><section>
+<h2 id="overview">Overview</h2>
+<ul>
+<li>Introduction</li>
+<li>undertone and Its Use Cases</li>
+<li>Architecture</li>
+<li>Supervision Trees</li>
+<li>Clients and Servers</li>
+<li>External Processes, Ports, and <code>exec</code></li>
+<li>Languages</li>
+<li>A Custom REPL</li>
+<li>Demo / Performance / Walkthrough</li>
+<li>What&rsquo;s Next for undertone</li>
+<li>Q &amp; A</li>
+</ul>
+
+
+
+<aside class="notes"><p>&hellip; in particular, the need for a reliable soft real-time
+system capable of speaking multiple protocols, of creating servers or
+connecting to them, and of being able to continue operations, even
+as parts of the system encounter unrecoverable errors and must be restarted.</p>
+</aside>
+</section><section>
+<h2 id="who-am-i">Who am I?</h2>
+<ul>
+<li>Prinicpal software engineer</li>
+<li>Life-long hacker (started at age 9 in &lsquo;81; never stopped)</li>
+<li>Habbitual explorer</li>
+<li>Core contributor to Robert Virding&rsquo;s Lisp Flavoured Erlang (LFE)</li>
+</ul>
+
+
+
+<aside class="notes"><p>Here are some superficial bullet points about me &hellip;</p>
+</aside>
+</section><section>
+<h2 id="who-am-i-1">Who am I?</h2>
+<ul>
+<li>4 yo - Messing about with Piano</li>
+<li>9 or 10 yo - Formal piano lessons, casual guitar</li>
+<li>14 yo - First synthesizer (analog Korg PolySix)</li>
+<li>16 yo - Performed in a chamber music group</li>
+<li>25 yo - Stopped music; replaced with physics/maths &hellip; then career</li>
+<li>42 yo - Began exploring generative music</li>
+<li>48 yo - Started playing seriously again</li>
+</ul>
+
+
+
+<aside class="notes"><p>&hellip; and some more, relating to music.</p>
+<p>If I can draw your attention to the end of that list &ndash;</p>
+<p>About 6 1/2 years ago at OSCON 2014 &hellip;</p>
+</aside>
+</section><section>
+<h2 id="re-entering-the-musical-world">Re-entering the Musical World</h2>
+<p><img src="dm_as_1.jpg" /></p>
+
+
+
+<aside class="notes"><p>&hellip; I met Andrew Sorensen &ndash; pictured here &ndash; after his Extempore live-coding performance keynote.</p>
+<p>(And yeah, that&rsquo;s me &ndash; the one nearest him).</p>
+<p>Andrew and I talked about live coding including my interest in using LFE/OTP along with Extempore.</p>
+</aside>
+</section><section>
+<h2 id="re-entering-the-musical-world-1">Re-entering the Musical World</h2>
+<p><img src="dm_as_1.jpg" /></p>
+
+
+
+<aside class="notes"><p>I believe he also mentioned previous conversations between himself and Joe Armstrong about Extempore and Erlang &ndash; including some possibilities for collaboration.</p>
+<p>I started using Extempore immediately after Andrew&rsquo;s performnace, when he shared his keynote code with me. Yet life pulled me in other directions.</p>
+<p>Last year, however, I picked it up again &hellip;</p>
+</aside>
+</section><section>
+<h2 id="re-entering-the-musical-world-2">Re-entering the Musical World</h2>
+<p><img src="sound_of_erlang.jpg" /></p>
+
+
+
+<aside class="notes"><p>&hellip; after Aleksander Lisiecki&rsquo;s blog post which covered sound generation in Erlang.</p>
+<p>I ported his code to LFE, and sufficiently re-inspired, proceeded to create the undertone project.</p>
+</section><section>
+<h2 id="wherefore-undertone">Wherefore undertone?</h2>
+<img src="undertone-logo-v1.svg" width="60%" style="border:none; background: none; box-shadow: none;"/> 
+<aside class="notes"><p>undertone came about due to my need to control synthsizers &ndash; both hardware and software &ndash; and run services. For all the separate systems I wanted to manage, a BEAM language felt like the perfect match.</p>
+<p>I started by reading everything I could on Erlang and music, retracing Joe Armstrong&rsquo;s steps from the mid-2000s up until a few short years ago.</p>
+</aside>
+</section><section>
+<h2 id="wherefore-undertone-1">Wherefore undertone?</h2>
+<img src="undertone-logo-v1.svg" width="60%" style="border:none; background: none; box-shadow: none;"/> 
+<aside class="notes"><p>As such, one of the first features that landed in undertone was support for Open Sound Control (or OSC). This allowed me to run several of Joe&rsquo;s code samples from within a structured project using a custom backend for SuperCollider.</p>
+<p>Ultimately, though, I became frustrated by my admittedly subjective perception that SuperCollider seems to lack an element of musicality &ndash; a feeling that echoed my previous experiences with it.</p>
+</aside>
+</section><section>
+<h2 id="wherefore-undertone-2">Wherefore undertone?</h2>
+<img src="dm_as_2.jpg" width="50%"/> 
+<aside class="notes"><p>Remembering my wonderful experience with Extempore, I turned there next.</p>
+<p>Within a few days I&rsquo;d added a new backend for it in undertone, one that allowed me to run Extempore code from LFE.</p>
+</aside>
+</section><section>
+<h2 id="wherefore-undertone-3">Wherefore undertone?</h2>
+<img src="kronos-lfe-undertone.jpg" width="60%"/> 
+<aside class="notes"><p>The real &ldquo;why&rdquo; behind undertone isn&rsquo;t a battle of backends, though &hellip;</p>
+<p>the heart of the matter is what I wanted to do with it.</p>
+<p>In my practice sessions with guitar and synthesizers, I wanted to be able to quickly write just a few lines of code for some ambient backing sounds, or chord progressions against which I could practice scales, or experiment with intervals and counterpoint.</p>
+</aside>
+</section><section>
+<h2 id="wherefore-undertone-4">Wherefore undertone?</h2>
+<img src="model-d-lfe-undertone.jpg" width="40%"/> 
+<aside class="notes"><p>After so long in the software industry, I&rsquo;m just much, much faster at writing code than sitting down with a sheaf of blank staves and writing notes. So it needed to be a language in which I had fluency.</p>
+<p>And, if I&rsquo;m going to be writing code in my spare time, it needed to be a language that I love and have fun using. Ergo, LFE.</p>
+</aside>
+</section><section>
+<h2 id="wherefore-undertone-5">Wherefore undertone?</h2>
+<ul>
+<li>Create music in my preferred language</li>
+<li>Monitoring and automatically restarting OS processes</li>
+<li>Speak to Open Sound Control servers (i.e., controlling faders on software consoles/mixers)</li>
+<li>Potentially host my own OSC servers</li>
+<li>Send TCP packages to the Extempore compiler service</li>
+<li>Automtically reconnect (with backoff support) to required services</li>
+<li>Be able to restart any of these components in the event of partial or complete system failure</li>
+</ul>
+<aside class="notes"><p>Above and beyond that, I needed to be able to control external processes running on the operating system, restarting them as necessary.</p>
+<p>There are a lot of features listed here, but that one was biggie for me &ndash; having run into it early on:</p>
+<p>I did a lot of experimentation with different MIDI drivers, software synthesizers, VST plugin hosts, and ended up having various applications or their supporting processes, crash.</p>
+</aside>
+</section><section>
+<h2 id="wherefore-undertone-6">Wherefore undertone?</h2>
+<ul>
+<li>Create music in my preferred language</li>
+<li>Monitoring and automatically restarting OS processes</li>
+<li>Speak to Open Sound Control servers (i.e., controlling faders on software consoles/mixers)</li>
+<li>Potentially host my own OSC servers</li>
+<li>Send TCP packages to the Extempore compiler service</li>
+<li>Automtically reconnect (with backoff support) to required services</li>
+<li>Be able to restart any of these components in the event of partial or complete system failure</li>
+</ul>
+<aside class="notes"><p>Sometimes days of work &ndash; where I&rsquo;d invested my time in a long chain of trial and error &ndash; were lost. All because just one component I&rsquo;d been experimenting with was unstable or wasn&rsquo;t designed to do the crazy things I was asking of it.</p>
+<p>And to that point &hellip;</p>
+</aside>
+</section><section>
+<h2 id="wherefore-undertone-7">Wherefore undertone?</h2>
+<p>Also:</p>
+<ul>
+<li>Maintain multiple, separate state contexts</li>
+<li>Support a familiar workflow (a REPL!)</li>
+<li>Provide basic session management (ETS + a handful of functions)</li>
+</ul>
+<aside class="notes"><p>I also needed to manage state in a sane manner. As you are all assuradly well aware, the points above and those in the previous slide are features readily available in OTP and those BEAM languages which offer Erlang interoperability.</p>
+<p>It is for all these reasons that undertone was born, created in LFE, and built upon the foundation of Erlang and OTP.</p>
+</aside>
+</section>
+<section data-noprocess data-shortcode-slide
+      data-transition="none">
+<h2 id="what-is-undertone">What is undertone?</h2>
+<img src="arch/erlang-node-diagram2.jpg" width="80%" style="border:none; background: none;"/> 
+<aside class="notes"><p>undertone is an idea and a set of needs which depend upon multiple systems in order to realise the goal of making music reliably.</p>
+<p>Here is a now-classic BEAM depcition of the undertone stack.</p>
+</aside>
+</section><section>
+<h2 id="architecture">Architecture</h2>
+<p><img src="arch/system-context.jpg" style="width: 100%" /></p>
+<aside class="notes"><p>And here is a diagram that is perhaps a bit more useful: a view of the system configured to use the Extempore backend, with all of the high-level communications involved.</p>
+</aside>
+</section><section>
+<h2 id="architecture-1">Architecture</h2>
+<p>System context for Extempore:</p>
+<ul>
+<li>talks to the OS / routes MIDI</li>
+<li>signals routed to external devices</li>
+<li>also routed to MIDI in the DAW (e.g., software synthesizers)</li>
+</ul>
+<aside class="notes"><p>Extempore runs a TCP server to which we can connect, and then from there, gain access to the operating system&rsquo;s audio layer, MIDI devices, and the like.</p>
+</aside>
+</section><section>
+<h2 id="architecture-2">Architecture</h2>
+<p>System context for undertone:</p>
+<ul>
+<li>uses Erlang (starts up supervision tree, clients, servers)</li>
+<li>talks to Extempore (bitstrings over TCP)</li>
+<li>controls OSC servers (e.g., DAWs)</li>
+</ul>
+<aside class="notes"><p>undertone spawns the <code>extmpore</code> binary as a managed OS process, starts a TCP client, and optionally starts Open Sound Control clients and servers.</p>
+<p>All of these goe into a supervision tree that will restart these components, should one or more of them be pushed beyond their limits &ndash; all without crashing the Erlang VM.</p>
+</aside>
+</section><section>
+<h2 id="architecture-3">Architecture</h2>
+<p><img src="arch/system-context.jpg" style="width: 100%" /></p>
+<aside class="notes"><p>In addition to Extempore support &hellip;</p>
+</aside>
+</section><section>
+<h2 id="architecture-4">Architecture</h2>
+<p><img src="arch/system-context-bevin.jpg" style="width: 100%" /></p>
+<aside class="notes"><p>I&rsquo;m working on a new backend using two CLI tools created by the head of software engineering at Moog: Geert Bevin. These are Erlang ports opened to long running OS processes.</p>
+<p>I had hoped to have this ready to show you today, but I instead chose to create a new demo using a sampled grand piano, which you&rsquo;ll be hearing in a few minutes.</p>
+</aside>
+</section><section>
+<h2 id="architecture-5">Architecture</h2>
+<p><img src="arch/system-context.jpg" style="width: 100%" /></p>
+<aside class="notes"><p>Back to the Extempore backend:</p>
+<p>If we zoom in on the section &hellip;</p>
+</aside>
+</section>
+<section data-noprocess data-shortcode-slide
+      data-transition="none">
+<h2 id="architecture-6">Architecture</h2>
+<p><img src="arch/system-context-zoom.jpg" style="width: 100%" /></p>
+<aside class="notes"><p>&hellip; within the dashed purple border &hellip;</p>
+</aside>
+</section><section>
+<h2 id="architecture-7">Architecture</h2>
+<p><img src="arch/containers2.jpg" style="width: 100%" /></p>
+<aside class="notes"><p>We can see a little more of how undertone pulls systems together.</p>
+<p>This particular view of the architecture shows which undertone LFE and OTP components are connected to each other and how.</p>
+</aside>
+</section>
+<section data-noprocess data-shortcode-slide
+      data-transition="none">
+<h2 id="architecture-8">Architecture</h2>
+<p><img src="arch/containers2.jpg" style="width: 100%" /></p>
+<aside class="notes"><p>The grey box in the middle-right is what you will being seeing during the demo.</p>
+<p>It represents a custom Extempore REPL &ndash; written in LFE &ndash; that has its own commands that are separate from the LFE REPL.</p>
+</aside>
+</section>
+<section data-noprocess data-shortcode-slide
+      data-transition="none">
+<h2 id="architecture-9">Architecture</h2>
+<p><img src="arch/containers2.jpg" style="width: 100%" /></p>
+<aside class="notes"><p>Note that everything within the purple dashed boundary except the Extepore component, has been written in LFE.</p>
+</aside>
+</section><section>
+<h2 id="architecture-10">Architecture</h2>
+<p>The undertone &ldquo;container&rdquo;:</p>
+<ul>
+<li>OTP app with supervisor and state server</li>
+<li>State server for mananging session commands and system config</li>
+<li>OSC clients for any OSC-enabled software running a UDP server</li>
+<li>TCP client for long-running connections to Extempore</li>
+<li>LFE REPL</li>
+<li>Extempore REPL</li>
+</ul>
+<aside class="notes"><p>Here&rsquo;s a quick textual summary of all those diagrams &hellip;</p>
+</aside>
+</section><section>
+<h2 id="progress-check">Progress Check</h2>
+<ul>
+<li>✅ Introduction</li>
+<li>✅ undertone and Its Use Cases</li>
+<li>✅ Architecture</li>
+<li>Supervision Trees</li>
+<li>Clients and Servers</li>
+<li>External Processes, Ports, and exec</li>
+<li>A Custom REPL</li>
+<li>Demo / Performance / Walkthrough</li>
+<li>What&rsquo;s Next for undertone</li>
+<li>Q &amp; A</li>
+</ul>
+<aside class="notes"><p>And here&rsquo;s a reminder on what we&rsquo;ve covered so far &hellip;</p>
+</aside>
+</section><section>
+<h2 id="supervision-trees">Supervision Trees</h2>
+<p><img src="treebeard-talbot-jenkins.jpg" style="width: 40%" /></p>
+<aside class="notes"><p>Now let&rsquo;s take a closer look at undertone&rsquo;s supervision tree.</p>
+<p>This is of special importance for undertone, since it is the core of what undertone uniquely offers to the world of programmatic and generative music.</p>
+</aside>
+</section><section>
+<h2 id="supervision-trees-1">Supervision Trees</h2>
+<p><img src="undertone-sup.jpg" style="width: 100%" /></p>
+<aside class="notes"><p>Here&rsquo;s the current undertone supervisor <code>init</code> function.</p>
+<p>Based upon OTP release configuration<code>sys.config</code> values, the appropriate child processes will be created, some specific to a backend.</p>
+<p>This is, of course, easily extendable to any backend or other related service which might be needed in the future.</p>
+</aside>
+</section><section>
+<h2 id="supervision-trees-2">Supervision Trees</h2>
+<p><img src="undertone-sup-xt.jpg" style="width: 100%" /></p>
+<aside class="notes"><p>When undertone is run with the Extempore backend, it supervises:</p>
+<ol>
+<li>the general undertone server common to all backends</li>
+<li>a server specific to the Extempore backend</li>
+<li>and then an additional server that manages the Extempore REPL sessions</li>
+</ol>
+<p>The backend-specific server then opens an Erlang port to manage the OS process in which the Extempore binary is running.</p>
+</aside>
+</section><section>
+<h2 id="supervision-trees-3">Supervision Trees</h2>
+<p><img src="undertone-sup-bevin.jpg" style="width: 100%" /></p>
+<aside class="notes"><p>Things are a little different for the &ldquo;Bevin&rdquo; backend:</p>
+<ul>
+<li>while there&rsquo;s still the general server</li>
+<li>and a backend-specific server</li>
+</ul>
+<p>There&rsquo;s no custom REPL. This backend doesn&rsquo;t have its own language, unlike Extempore, so we don&rsquo;t need one: we get to use the regular LFE REPL.</p>
+<p>Also, there are <em>two</em> OS processes for the separate binaries which comprise this backend: A MIDI tool for sending MIDI messages, and another for receiving them.</p>
+</aside>
+</section><section>
+<h2 id="clients-and-servers">Clients and Servers</h2>
+<ul>
+<li>Extempore client
+<ul>
+<li>TCP client for sending messages to the compiler server</li>
+<li>Scheme syntax as bitstrings</li>
+<li>Started by the release</li>
+</ul>
+</li>
+</ul>
+<aside class="notes"><p>I&rsquo;m running short on time, and want to leave enough room for the demo and walk-through &hellip;</p>
+</aside>
+</section><section>
+<h2 id="clients-and-servers-1">Clients and Servers</h2>
+<ul>
+<li>Open Sound Control clients
+<ul>
+<li>potentially many</li>
+<li>connecting to both software and hardware</li>
+<li>e.g., digital audio workstations (DAWs) to control console faders</li>
+</ul>
+</li>
+</ul>
+<aside class="notes"><p>So I will breeze past these slides.</p>
+</aside>
+</section><section>
+<h2 id="clients-and-servers-2">Clients and Servers</h2>
+<ul>
+<li>Open Sound Control servers
+<ul>
+<li>none right now</li>
+<li>could create an OSC/MIDI bridge in LFE/Erlang</li>
+<li>create a custom Raspberry Pi sound device and export OSC methods</li>
+</ul>
+</li>
+<li>erlsci/osc is UDP only</li>
+</ul>
+<aside class="notes"><p>They simply give more details about the types of clients and servers used in undertone &hellip;</p>
+</aside>
+</section><section>
+<h2 id="clients-and-servers-3">Clients and Servers</h2>
+<ul>
+<li><code>gen_servers</code> for state management</li>
+<li>The Extempore REPL is a simple looping server</li>
+<li>The undertone backends each have their own <code>gen_server</code> that&rsquo;s responsible for managing the backend</li>
+</ul>
+<aside class="notes"><p>&hellip; It&rsquo;s all standard fare, though &ndash; nothing too remarkable. I can cover any questions around these during the Q &amp; A.</p>
+</aside>
+</section><section>
+<h2 id="external-processes--erlang-ports">External Processes &amp; Erlang Ports</h2>
+<ul>
+<li>Previously used <code>erlang:open_port</code> (<code>spawn_executable</code>)</li>
+<li>Switched to <code>exec</code> library (which still uses Erlang ports)</li>
+<li>Extempore backend:
+<ul>
+<li>capturing output from Extempore</li>
+</ul>
+</li>
+<li>&ldquo;Bevin&rdquo; backend:
+<ul>
+<li>sending MIDI (OS process)</li>
+<li>receiving MIDI (separate OS process)</li>
+<li>stdout is captured for both and logged / parsed</li>
+</ul>
+</li>
+</ul>
+<aside class="notes"><p>I do want to pause here, though:</p>
+<p>Of all the languages where I have had to utilise their support for inter-process
+communication or reading from and writing to pipes, every single one was
+a bit painful &ndash; with the notable and laudable exception of Erlang.</p>
+</aside>
+</section><section>
+<h2 id="external-processes--erlang-ports-1">External Processes &amp; Erlang Ports</h2>
+<ul>
+<li>Previously used <code>erlang:open_port</code> (<code>spawn_executable</code>)</li>
+<li>Switched to <code>exec</code> library (which still uses Erlang ports)</li>
+<li>Extempore backend:
+<ul>
+<li>capturing output from Extempore</li>
+</ul>
+</li>
+<li>&ldquo;Bevin&rdquo; backend:
+<ul>
+<li>sending MIDI (OS process)</li>
+<li>receiving MIDI (separate OS process)</li>
+<li>stdout is captured for both and logged / parsed</li>
+</ul>
+</li>
+</ul>
+<aside class="notes"><p>As much as I love OTP and regale non-BEAM programmers with the virtues of
+its behaviours and callbacks, on the undertone project I have become
+deeply enamored with Erlang ports. Though I&rsquo;ve used them before, this is
+the first time they have formed the very basis of a project, and working
+with them has been a delight.</p>
+</aside>
+</section><section>
+<h2 id="external-processes--erlang-ports-2">External Processes &amp; Erlang Ports</h2>
+<ul>
+<li>Previously used <code>erlang:open_port</code> (<code>spawn_executable</code>)</li>
+<li>Switched to <code>exec</code> library (which still uses Erlang ports)</li>
+<li>Extempore backend:
+<ul>
+<li>capturing output from Extempore</li>
+</ul>
+</li>
+<li>&ldquo;Bevin&rdquo; backend:
+<ul>
+<li>sending MIDI (OS process)</li>
+<li>receiving MIDI (separate OS process)</li>
+<li>stdout is captured for both and logged / parsed</li>
+</ul>
+</li>
+</ul>
+<aside class="notes"><p>That being said, there are some problems one encounters when shutting down
+an OTP application that has spawned long-running executables. And, to be
+fair, managing the lifetime of an OS process is arguably not the purview
+of a simple, low-level library.</p>
+</aside>
+</section><section>
+<h2 id="external-processes--erlang-ports-3">External Processes &amp; Erlang Ports</h2>
+<ul>
+<li>Previously used <code>erlang:open_port</code> (<code>spawn_executable</code>)</li>
+<li>Switched to <code>exec</code> library (which still uses Erlang ports)</li>
+<li>Extempore backend:
+<ul>
+<li>capturing output from Extempore</li>
+</ul>
+</li>
+<li>&ldquo;Bevin&rdquo; backend:
+<ul>
+<li>sending MIDI (OS process)</li>
+<li>receiving MIDI (separate OS process)</li>
+<li>stdout is captured for both and logged / parsed</li>
+</ul>
+</li>
+</ul>
+<aside class="notes"><p>Fortunately, the erlexec project does support this, and with an API that
+is just as simple to use as Erlang ports. And erlexec itself uses ports.</p>
+</aside>
+</section><section>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li><a href="https://github.com/saleyn/erlexec">https://github.com/saleyn/erlexec</a>
+<ul>
+<li>Addresses issues with terminating OS processes</li>
+<li>Keeps to the spirit of Erlang&rsquo;s clean Port API</li>
+<li>Used to manage 2 of 3 backends in undertone</li>
+</ul>
+</li>
+</ul>
+<aside class="notes"><p>Which brings me to something else I wanted to call out: special mention for a few of the key dependencies upon which undertone relies.</p>
+</aside>
+</section><section>
+<h2 id="dependencies-1">Dependencies</h2>
+<ul>
+<li><a href="https://github.com/erlsci/osc">https://github.com/erlsci/osc</a>
+<ul>
+<li>Forked from <a href="https://github.com/marianoguerra/erlang-osc">https://github.com/marianoguerra/erlang-osc</a></li>
+<li>5-10 year old code, updated per rebar3 project best practices</li>
+</ul>
+</li>
+</ul>
+<aside class="notes"><p>And without which the task of realising the vision of the undertone
+project would have taken much more time &hellip;</p>
+</aside>
+</section><section>
+<h2 id="dependencies-2">Dependencies</h2>
+<ul>
+<li><a href="https://github.com/lfex/tcp-client">https://github.com/lfex/tcp-client</a>
+<ul>
+<li>Originally used <a href="https://github.com/cabol/tcp_client">https://github.com/cabol/tcp_client</a></li>
+<li>Abandoned that effort in favour of an implementation based upon <code>gen_statem</code> using <a href="https://andrealeopardi.com/posts/connection-managers-with-gen_statem/">https://andrealeopardi.com/posts/connection-managers-with-gen_statem/</a></li>
+<li>Written in LFE</li>
+</ul>
+</li>
+</ul>
+<aside class="notes"><p>Or might simply have made the prospect of it too daunting.</p>
+<p>Side note: Andrea&rsquo;s blog post is one of the best demonstrations for <code>gen_statem</code> I&rsquo;ve yet encountered.</p>
+</aside>
+</section><section>
+<h2 id="dependencies-3">Dependencies</h2>
+<ul>
+<li><a href="https://github.com/ferd/backoff">https://github.com/ferd/backoff</a>
+<ul>
+<li>A readily available and easy to use exponential backoff library</li>
+</ul>
+</li>
+</ul>
+<aside class="notes"><p>And a special mention of juse one of the very many contributions by Fred to the Erlang ecosystem.</p>
+</aside>
+</section><section>
+<h2 id="progress-check-1">Progress Check</h2>
+<ul>
+<li>✅ Introduction</li>
+<li>✅ undertone and Its Use Cases</li>
+<li>✅ Architecture</li>
+<li>✅ Supervision Trees</li>
+<li>✅ Clients and Servers</li>
+<li>✅ External Processes, Ports, and exec</li>
+<li>Languages</li>
+<li>A Custom REPL</li>
+<li>Demo / Performance / Walkthrough</li>
+<li>What&rsquo;s Next for undertone</li>
+<li>Q &amp; A</li>
+</ul>
+<aside class="notes"><p>Aaaaand another update on the ground we&rsquo;ve covered so far &hellip;</p>
+</aside>
+</section>
+<section data-noprocess data-shortcode-slide
+      data-background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png">
+<h2 id="erlang--lfe">Erlang &amp; LFE</h2>
+<p>Basics: a recursive function using pattern-matching in the function heads.</p>
+<h4 id="erlang">Erlang</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape><span style="color:#50fa7b">ackermann</span>(<span style="color:#bd93f9">0</span>, <span style="color:#8be9fd;font-style:italic">N</span>) <span style="color:#ff79c6">-&gt;</span>
+  <span style="color:#8be9fd;font-style:italic">N</span><span style="color:#ff79c6">+</span><span style="color:#bd93f9">1</span>;
+<span style="color:#50fa7b">ackermann</span>(<span style="color:#8be9fd;font-style:italic">M</span>, <span style="color:#bd93f9">0</span>) <span style="color:#ff79c6">-&gt;</span>
+  ackermann(<span style="color:#8be9fd;font-style:italic">M</span><span style="color:#ff79c6">-</span><span style="color:#bd93f9">1</span>, <span style="color:#bd93f9">1</span>);
+<span style="color:#50fa7b">ackermann</span>(<span style="color:#8be9fd;font-style:italic">M</span>, <span style="color:#8be9fd;font-style:italic">N</span>) <span style="color:#ff79c6">-&gt;</span>
+  ackermann(<span style="color:#8be9fd;font-style:italic">M</span><span style="color:#ff79c6">-</span><span style="color:#bd93f9">1</span>, ackermann(<span style="color:#8be9fd;font-style:italic">M</span>, <span style="color:#8be9fd;font-style:italic">N</span><span style="color:#ff79c6">-</span><span style="color:#bd93f9">1</span>)).
+</code></pre></div><h4 id="lfe">LFE</h4>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape>(<span style="color:#50fa7b">defun</span> <span style="color:#8be9fd;font-style:italic">ackermann</span>
+  ((<span style="color:#bd93f9">0</span> <span style="color:#8be9fd;font-style:italic">n</span>) (<span style="color:#8be9fd;font-style:italic">+ </span><span style="color:#8be9fd;font-style:italic">n</span> <span style="color:#bd93f9">1</span>))
+  ((<span style="color:#50fa7b">m</span> <span style="color:#bd93f9">0</span>) (<span style="color:#50fa7b">ackermann</span> (<span style="color:#8be9fd;font-style:italic">- </span><span style="color:#8be9fd;font-style:italic">m</span> <span style="color:#bd93f9">1</span>) <span style="color:#bd93f9">1</span>))
+  ((<span style="color:#50fa7b">m</span> <span style="color:#8be9fd;font-style:italic">n</span>) (<span style="color:#50fa7b">ackermann</span> (<span style="color:#8be9fd;font-style:italic">- </span><span style="color:#8be9fd;font-style:italic">m</span> <span style="color:#bd93f9">1</span>) (<span style="color:#50fa7b">ackermann</span> <span style="color:#8be9fd;font-style:italic">m</span> (<span style="color:#8be9fd;font-style:italic">- </span><span style="color:#8be9fd;font-style:italic">n</span> <span style="color:#bd93f9">1</span>)))))
+</code></pre></div><aside class="notes"><p>It would be a shame to give a BEAM talk without actually doing a dialectical comparison, so here is something for those who have not seen any LFE before:</p>
+<p>This is some syntax in Erlang and LFE for function-head pattern-matching and recursion.</p>
+</aside>
+</section><section>
+<h2 id="erlang--lfe-1">Erlang &amp; LFE</h2>
+<p>OTP: Erlang <code>supervisor</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape>-module(&#39;undertone.sup&#39;).
+-behaviour(supervisor).
+-export([start_link<span style="color:#ff79c6">/</span><span style="color:#bd93f9">0</span>]).
+-export([init<span style="color:#ff79c6">/</span><span style="color:#bd93f9">1</span>]).
+
+<span style="color:#50fa7b">start_link</span>() <span style="color:#ff79c6">-&gt;</span>
+    supervisor:<span style="color:#50fa7b">start_link</span>({local, <span style="color:#ff79c6">?</span><span style="color:#8be9fd;font-style:italic">MODULE</span>}, <span style="color:#ff79c6">?</span><span style="color:#8be9fd;font-style:italic">MODULE</span>, []).
+    
+<span style="color:#50fa7b">init</span>([]) <span style="color:#ff79c6">-&gt;</span>
+    {ok, {sup_flags(),
+          [child(&#39;undertone.server&#39;, start_link, [])]}}.
+    
+<span style="color:#50fa7b">sup_flags</span>() <span style="color:#ff79c6">-&gt;</span>
+    #{strategy <span style="color:#ff79c6">=&gt;</span> one_for_one,
+      intensity <span style="color:#ff79c6">=&gt;</span> <span style="color:#bd93f9">3</span>,
+      period <span style="color:#ff79c6">=&gt;</span> <span style="color:#bd93f9">60</span>}.
+</code></pre></div><aside class="notes"><p>For a comparison of slightly more involved code, here is a partial implementation of the iconic OTP supervisor in Erlang.</p>
+</aside>
+</section>
+<section data-noprocess data-shortcode-slide
+      data-background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png">
+<h2 id="erlang--lfe-2">Erlang &amp; LFE</h2>
+<p>OTP: LFE <code>supervisor</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape>(<span style="color:#50fa7b">defmodule</span> <span style="color:#8be9fd;font-style:italic">undertone.sup</span>
+  (<span style="color:#50fa7b">behaviour</span> <span style="color:#8be9fd;font-style:italic">supervisor</span>)
+  (<span style="color:#50fa7b">export</span>
+   (<span style="color:#50fa7b">start_link</span> <span style="color:#bd93f9">0</span>)
+   (<span style="color:#50fa7b">init</span> <span style="color:#bd93f9">1</span>)))
+   
+(<span style="color:#50fa7b">defun</span> <span style="color:#8be9fd;font-style:italic">start_link</span> ()
+  (<span style="color:#50fa7b">supervisor</span><span style="color:#f1fa8c">:start_link</span> <span style="color:#ff79c6">`#</span>(<span style="color:#50fa7b">local</span> ,(<span style="color:#50fa7b">MODULE</span>)) (<span style="color:#50fa7b">MODULE</span>) <span style="color:#ff79c6">&#39;</span>()))
+
+(<span style="color:#50fa7b">defun</span> <span style="color:#8be9fd;font-style:italic">init</span> (<span style="color:#50fa7b">_args</span>)
+  <span style="color:#ff79c6">`#</span>(<span style="color:#50fa7b">ok</span> <span style="color:#ff79c6">#</span>(,(<span style="color:#50fa7b">sup-flags</span>)
+          (,(<span style="color:#50fa7b">child</span> <span style="color:#f1fa8c">&#39;undertone.server</span> <span style="color:#f1fa8c">&#39;start_link</span> <span style="color:#ff79c6">&#39;</span>())))))
+  
+(<span style="color:#50fa7b">defun</span> <span style="color:#8be9fd;font-style:italic">sup-flags</span> ()
+  <span style="color:#ff79c6">`#</span><span style="color:#8be9fd;font-style:italic">m</span>(<span style="color:#50fa7b">strategy</span> <span style="color:#8be9fd;font-style:italic">one_for_one</span>
+      <span style="color:#8be9fd;font-style:italic">intensity</span> <span style="color:#bd93f9">3</span>
+</code></pre></div><aside class="notes"><p>And the same in LFE.</p>
+<p>Back to undertone:</p>
+<p>When using the Extempore backend, there are another two languages to consider, both derivations of Scheme &hellip;</p>
+</aside>
+</section><section>
+<h2 id="extempore">Extempore</h2>
+<p>xtlang:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape>(<span style="color:#50fa7b">bind-func</span> <span style="color:#8be9fd;font-style:italic">AudioBuffer_data_b64</span>
+  (<span style="color:#ff79c6">lambda </span>(<span style="color:#50fa7b">ab:AudioBuffer*</span>)
+    (<span style="color:#ff79c6">let </span>((<span style="color:#50fa7b">b64size:i64</span> <span style="color:#bd93f9">0</span>)
+          (<span style="color:#50fa7b">datsize:i64</span> (<span style="color:#8be9fd;font-style:italic">* </span>(<span style="color:#50fa7b">AudioBuffer_frames</span> <span style="color:#8be9fd;font-style:italic">ab</span>)
+                          (<span style="color:#50fa7b">AudioBuffer_channels</span> <span style="color:#8be9fd;font-style:italic">ab</span>) <span style="color:#bd93f9">4</span>)))
+      (<span style="color:#50fa7b">String</span> (<span style="color:#50fa7b">base64_encode</span> (<span style="color:#50fa7b">cast</span> (<span style="color:#50fa7b">tref</span> <span style="color:#8be9fd;font-style:italic">ab</span> <span style="color:#bd93f9">4</span>) <span style="color:#8be9fd;font-style:italic">i8*</span>)
+                             <span style="color:#8be9fd;font-style:italic">datsize</span>
+                             (<span style="color:#50fa7b">ref</span> <span style="color:#8be9fd;font-style:italic">b64size</span>))))))
+</code></pre></div><aside class="notes"><p>This is Extempore&rsquo;s xtlang, which provides low-level access to all aspects of the Extempore system, essentially a thin Scheme layer over Extempore&rsquo;s low-level C code.</p>
+</aside>
+</section><section>
+<h2 id="extempore-1">Extempore</h2>
+<p>Scheme:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:2;-o-tab-size:2;tab-size:2"><code class="nohighlight" data-noescape>(<span style="color:#50fa7b">sys:load</span> <span style="color:#f1fa8c">&#34;libs/external/portmidi.xtm&#34;</span>)
+(<span style="color:#50fa7b">pm_initialize</span>)
+(<span style="color:#ff79c6">define </span><span style="color:#8be9fd;font-style:italic">*midi-out*</span> (<span style="color:#50fa7b">pm_create_output_stream</span> <span style="color:#bd93f9">3</span>))
+
+(<span style="color:#ff79c6">define </span><span style="color:#8be9fd;font-style:italic">midi-loop</span>
+  (<span style="color:#ff79c6">lambda </span>(<span style="color:#50fa7b">beat</span> <span style="color:#8be9fd;font-style:italic">dur</span>)
+    (<span style="color:#50fa7b">mplay</span> <span style="color:#8be9fd;font-style:italic">*midi-out*</span>
+           (<span style="color:#50fa7b">random</span> (<span style="color:#8be9fd;font-style:italic">list </span><span style="color:#bd93f9">36</span> <span style="color:#bd93f9">43</span> <span style="color:#bd93f9">48</span> <span style="color:#bd93f9">51</span> <span style="color:#bd93f9">60</span> <span style="color:#bd93f9">60</span> <span style="color:#bd93f9">60</span> <span style="color:#bd93f9">67</span> <span style="color:#bd93f9">70</span> <span style="color:#bd93f9">74</span> <span style="color:#bd93f9">75</span>))
+           (<span style="color:#50fa7b">random</span> <span style="color:#bd93f9">60</span> <span style="color:#bd93f9">80</span>)
+           <span style="color:#8be9fd;font-style:italic">dur</span> <span style="color:#bd93f9">0</span>)
+    (<span style="color:#50fa7b">callback</span> (<span style="color:#50fa7b">*metro*</span> (<span style="color:#8be9fd;font-style:italic">+ </span><span style="color:#8be9fd;font-style:italic">beat</span> (<span style="color:#8be9fd;font-style:italic">* </span><span style="color:#ff79c6">.</span><span style="color:#bd93f9">5</span> <span style="color:#8be9fd;font-style:italic">dur</span>)))
+              <span style="color:#f1fa8c">&#39;midi-loop</span>
+              (<span style="color:#8be9fd;font-style:italic">+ </span><span style="color:#8be9fd;font-style:italic">beat</span> <span style="color:#8be9fd;font-style:italic">dur</span>)
+              <span style="color:#8be9fd;font-style:italic">dur</span>)))
+
+(<span style="color:#50fa7b">midi-loop</span> (<span style="color:#50fa7b">*metro*</span> <span style="color:#f1fa8c">&#39;get-beat</span> <span style="color:#bd93f9">4</span>) <span style="color:#bd93f9">1</span><span style="color:#8be9fd;font-style:italic">/4</span>)
+</code></pre></div><aside class="notes"><p>And this is Extempore&rsquo;s higher-level language, a derivative of TinyScheme.</p>
+<p>This is what most Extempore performers use &ndash; and is what you&rsquo;ll see me using in the custom REPL during the demo.</p>
+</aside>
+</section><section>
+<h2 id="a-custom-repl">A Custom REPL</h2>
+<p><img src="xt-repl-start.jpg" width="80%" /></p>
+<aside class="notes"><p>One of the benefits of using undertone with the Extempore backend is the
+REPL it provides for Extempore.</p>
+</aside>
+</section><section>
+<h2 id="a-custom-repl-1">A Custom REPL</h2>
+<p><img src="xt-repl-start.jpg" width="80%" /></p>
+<aside class="notes"><p>Extempore proper, doesn&rsquo;t actually have a REPL of its own &ndash; the standard way of interacting with it is by means of a text editor such as Emacs or VS Code which are  capable of sending Scheme forms to the Extempore TCP server for on-the-fly compilation.</p>
+<p>Calling the <code>start</code> function, as pictured here, is how one enters this
+REPL.</p>
+</aside>
+</section><section>
+<h2 id="a-custom-repl-2">A Custom REPL</h2>
+<p><img src="xt-repl-help.jpg" width="80%" /></p>
+<aside class="notes"><p>One may type the <code>(help)</code> function to display the
+list of possible commands.</p>
+</aside>
+</section><section>
+<h2 id="a-custom-repl-3">A Custom REPL</h2>
+<p><img src="xt-repl-sess.jpg" width="80%" /></p>
+<aside class="notes"><p>And the <code>(sess)</code> command displays an indexed
+list of all Extempore forms and REPL commands entered during
+the given session.</p>
+<p>Additional commands are available for re-running one or more of the previous
+entries in this list.</p>
+</aside>
+</section>
+<section data-noprocess data-shortcode-slide
+      data-background-image="LFE-logo-darker-greys-0.05trans-6-square-x3000.png">
+<h2 id="a-custom-repl-4">A Custom REPL</h2>
+<p><img src="xt-repl-defun.jpg" width="100%" /></p>
+<aside class="notes"><p>A final note on this topic: The Extempore REPL was implemented in LFE using the classic approach invented
+by members of the Lisp community in the early 1960s:</p>
+<p>read-eval-print and loop :-)</p>
+</aside>
+</section><section>
+<h2 id="demo">Demo!</h2>
+<aside class="notes"><p>Okay, time for the demo!</p>
+<p>A note of caution, though: here there be dissonance! Sometimes for effect, and sometimes by unhappy accident. Due to the ramdom nature of generative music every performance is different &ndash; often <em>very</em> different.</p>
+<p>The key thing to keep in mind while listening is to think of the <em>possibillties</em> of what can be done, not the limitations of a given performance :-)</p>
+<p>Without further ado &hellip;</p>
+</aside>
+</section><section>
+<h2 id="demo-1">Demo!</h2>
+<aside class="notes"><p>There are two parts to the demo I will be giving you:</p>
+<ol>
+<li>The first is a recording comprised of piano adaptation for what was originally a piece for banjo and orchestra. This is then used as the basis in some generative techniques utilising Markov chains for control of chord progressions, melody generation, volumes, and sustain.</li>
+<li>After that is the second part, which walks through those generative techniques.</li>
+</ol>
+<p>Without further ado &hellip;</p>
+</aside>
+</section><section>
+<h2 id="demo-2">Demo</h2>
+<p>Hi-res video of demo available here:</p>
+<p><a href="https://www.youtube.com/watch?v=neSGoz2F1d8">https://www.youtube.com/watch?v=neSGoz2F1d8</a></p>
+<aside class="notes"><p>If you experienced any network dropout or if the sound quality over Zoom was not
+to your liking, you can view the demo on YouTube at this link.</p>
+</aside>
+</section><section>
+<h2 id="whats-next-for-undertone">What&rsquo;s Next for undertone?</h2>
+<p><img src="undertone-github.jpg" width="80%" /></p>
+<aside class="notes"><p>So what&rsquo;s next for undertone?</p>
+<p>I have created project tickets for efforts such as:</p>
+<ul>
+<li>Finishing the new MIDI-only, &ldquo;Bevin&rdquo; backend</li>
+<li>Deeper support of Extempore in native LFE</li>
+<li>Live capture of music, recorded as LFE data structures</li>
+<li>Digital Signal Processing from LFE</li>
+<li>More support for open source synthesizers</li>
+<li>Exploring the collaboration possibilities with the distributed platform that LFE offers</li>
+<li>Lots of practical use in generating music, music theory, etc. &hellip;</li>
+<li>And just making long-form pieces for the pure enjoyment of <em>listening!</em></li>
+</ul>
+</aside>
+</section><section>
+<h2 id="progress-check-2">Progress Check</h2>
+<ul>
+<li>✅ Introduction</li>
+<li>✅ undertone and Its Use Cases</li>
+<li>✅ Architecture</li>
+<li>✅ Supervision Trees</li>
+<li>✅ Clients and Servers</li>
+<li>✅ External Processes, Ports, and exec</li>
+<li>✅ Languages</li>
+<li>✅ A Custom REPL</li>
+<li>✅ Demo / Performance / Walkthrough</li>
+<li>✅ What&rsquo;s Next for undertone</li>
+<li>Q &amp; A</li>
+</ul>
+<aside class="notes"><p>And, for the sake of completeness, here are the checked-off topics.</p>
+</aside>
+</section><section>
+<h2 id="credits">Credits</h2>
+<p><a href="https://talbotjenkins.wixsite.com/talbotjenkins/miscellaneous?lightbox=dataItem-jpkmxxse">Ent drawing</a> by Talbot Jenkins.</p>
+<p><br /></p>
+<p>Beginnig of first piece in demo adapted for Piano, based upon &ldquo;Journey of the Sorcerer&rdquo; by Bernie Leadon of The Eagles.</p>
+<aside class="notes"><p>Special thanks to the Ent artist and for the original creator and performers of the Hitchhiker&rsquo;s Guide to the Galaxy theme.</p>
+</aside>
+</section><section>
+<h4 id="contact">Contact</h4>
+<ul>
+<li><a href="mailto:oubiwann@gmail.com">oubiwann@gmail.com</a></li>
+<li><a href="">@oubiwann</a></li>
+<li><a href="https://soundcloud.com/oubiwann/tracks">https://soundcloud.com/oubiwann/tracks</a></li>
+<li><a href="">linkedin.com/in/oubiwann</a></li>
+<li><a href="">@forgottentones</a></li>
+<li><a href="https://soundcloud.com/forgotten-tones/tracks">https://soundcloud.com/forgotten-tones/tracks</a></li>
+</ul>
+<aside class="notes"><p>Once the talk slides are published, you can visit these project-related links &hellip;</p>
+</aside>
+</section><section>
+<h4 id="undertone-resources">undertone Resources</h4>
+<ul>
+<li><a href="https://github.com/ut-proj/undertone">https://github.com/ut-proj/undertone</a></li>
+<li><a href="https://undertone.lfe.io/presentations">https://undertone.lfe.io/presentations</a></li>
+<li><a href="https://undertone.lfe.io/book">https://undertone.lfe.io/book</a></li>
+<li><a href="">lfe.slack.com</a> #algo-sound</li>
+<li><a href="http://groups.google.com/group/lfe-undertone">http://groups.google.com/group/lfe-undertone</a></li>
+<li><a href="">@lfeundertone</a></li>
+<li><a href="https://www.instagram.com/lfeundertone/">https://www.instagram.com/lfeundertone/</a></li>
+</ul>
+<aside class="notes"><p>and &hellip;</p>
+</aside>
+</section><section>
+<h4 id="lfe-resources">LFE Resources</h4>
+<ul>
+<li><a href="https://lfe.io/">https://lfe.io/</a></li>
+<li><a href="https://github.com/rvirding/lfe">https://github.com/rvirding/lfe</a></li>
+<li><a href="">lfe.slack.com</a></li>
+<li><a href="http://groups.google.com/group/lisp-flavoured-erlang">http://groups.google.com/group/lisp-flavoured-erlang</a></li>
+<li><a href="">@ErlangLisp</a></li>
+</ul>
+<aside class="notes"><p>with that &hellip;</p>
+</aside>
+</section><section>
+<h2 id="q--a">Q &amp; A</h2>
+<aside class="notes"><p>&hellip; I can field any questions you may have!</p>
+</aside>
+</aside>
+</section>
+
+  
+
+
+</div>
+      
+
+    </div>
+<script type="text/javascript" src=/presentations/codebeam-america-2021/reveal-hugo/object-assign.js></script>
+
+<a href="/presentations/codebeam-america-2021/reveal-js/css/print/" id="print-location" style="display: none;"></a>
+<script type="text/javascript">
+  var printLocationElement = document.getElementById('print-location');
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = printLocationElement.href + (window.location.search.match(/print-pdf/gi) ? 'pdf.css' : 'paper.css');
+  document.getElementsByTagName('head')[0].appendChild(link);
+</script>
+
+<script type="application/json" id="reveal-hugo-site-params">{"custom_theme":"lfe-green.scss","custom_theme_compile":true,"highlight_theme":"atom-one-dark","margin":0.2,"plugins":["plugin/menu/menu.js"],"theme":"night","transition":"fade"}</script>
+<script type="application/json" id="reveal-hugo-page-params">null</script>
+
+<script src="/presentations/codebeam-america-2021/reveal-js/js/reveal.js"></script>
+
+<script type="text/javascript">
+  
+  
+  function camelize(map) {
+    if (map) {
+      Object.keys(map).forEach(function(k) {
+        newK = k.replace(/(\_\w)/g, function(m) { return m[1].toUpperCase() });
+        if (newK != k) {
+          map[newK] = map[k];
+          delete map[k];
+        }
+      });
+    }
+    return map;
+  }
+  
+  var revealHugoDefaults = { center: true, controls: true, history: true, progress: true, transition: "slide" };
+  var revealHugoSiteParams = JSON.parse(document.getElementById('reveal-hugo-site-params').innerHTML);
+  var revealHugoPageParams = JSON.parse(document.getElementById('reveal-hugo-page-params').innerHTML);
+  
+  var options = Object.assign({},
+    camelize(revealHugoDefaults),
+    camelize(revealHugoSiteParams),
+    camelize(revealHugoPageParams));
+  Reveal.initialize(options);
+</script>
+
+
+  
+  
+  <script type="text/javascript" src="/presentations/codebeam-america-2021/reveal-js/plugin/markdown/marked.js"></script>
+  
+  <script type="text/javascript" src="/presentations/codebeam-america-2021/reveal-js/plugin/markdown/markdown.js"></script>
+  
+  <script type="text/javascript" src="/presentations/codebeam-america-2021/reveal-js/plugin/highlight/highlight.js"></script>
+  
+  <script type="text/javascript" src="/presentations/codebeam-america-2021/reveal-js/plugin/zoom-js/zoom.js"></script>
+  
+  
+  <script type="text/javascript" src="/presentations/codebeam-america-2021/reveal-js/plugin/notes/notes.js"></script>
+
+
+
+<script type="text/javascript" src="/presentations/codebeam-america-2021/plugin/menu/menu.js"></script>
+
+    
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']]
+  },
+  svg: {
+    fontCache: 'global'
+  }
+};
+</script>
+
+    
+  </body>
+</html>
