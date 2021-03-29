@@ -2,7 +2,7 @@
 
 ## 18 March - Glasgow CodeCraft
 
-[**Making Music with Software**](#codecraft-2021) - Duncan McGreggor
+**Making Music with Software** - Duncan McGreggor
 
 No recording or custom slides; recused slide material from other talks. However, we did a mini-workshop, based upon  Andrew Sorensen's [2015 Codemania Talk](https://www.youtube.com/watch?v=xpSYWd_aIiI) ("A Programmer's Guide To Western Music"). The Code used for this (some of it adapted to MIDI) is available here:
 
