@@ -15,7 +15,7 @@ No recording or custom slides; recused slide material from other talks. However,
 * [Teaser Video](https://www.youtube.com/watch?v=iaP9XtF7yRc&list=PLFTN-XUik9o9yseAj4n168SAZK89biSNP)
   * [Song created for teaser video](https://soundcloud.com/oubiwann/journey-of-the-source-variation-3) - "Patterns of Improbability"
   * [Song created accidentally while writing demo](https://soundcloud.com/oubiwann/debussys-spiral-arm) - "Debussy's Spiral Arm"
-* Presentation Video - TBA
+* [Presentation Video](https://www.youtube.com/watch?v=x6PNINUKBZ4)
 * [Slides](./codebeam-america-2021/) (speaker notes are viewable after hitting 's')
 * [Demo](https://www.youtube.com/watch?v=neSGoz2F1d8&list=PLFTN-XUik9o8iG0LXQBvEStWKTGb_n1QY)
 
