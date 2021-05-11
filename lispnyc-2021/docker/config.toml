@@ -1,0 +1,38 @@
+baseURL = "https://undertone.lfe.io/presentations/lispnyc-2021/"
+languageCode = "en-us"
+title = "Erlang Music Systems Programming with Lisp"
+theme = "reveal-hugo"
+
+[outputFormats.Reveal]
+baseName = "index"
+mediaType = "text/html"
+isHTML = true
+
+[markup.goldmark.renderer]
+unsafe = true
+
+[markup.highlight]
+codeFences = true
+style = "dracula"
+#style = "monokailight"
+#style = "rrt"
+#style = "solarized-dark"
+#style = "solarized-dark256"
+#style = "vim"
+#style = "native"
+#style = "paraiso-dark"
+tabWidth = 2
+lineNoStart = 1
+lineNos = false
+
+[params.reveal_hugo]
+theme = "night"
+margin = 0.2
+highlight_theme = "atom-one-dark"
+custom_theme = "lfe-dark.scss"
+#custom_theme = "lfe-light.scss"
+#custom_theme = "lfe-green.scss"
+#custom_theme = "lfe-classic.scss"
+custom_theme_compile = true
+plugins = ["plugin/menu/menu.js"]
+transition = "fade"

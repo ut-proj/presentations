@@ -1,0 +1,35 @@
+@import "reveal-js/css/theme/template/mixins";
+@import "reveal-js/css/theme/template/settings";
+@import "common";
+
+$mainFont: Helvetica, Arial, sans-serif;
+$auxFont: 'New Times Roman', 'Times Roman', serif;
+$headingFont: Helvetica, Arial, sans-serif;
+
+$backgroundColor: #fff;
+$backgroundImage: url(LFE-logo-darker-greys-6-square-x3000.png);
+$mainColor: #222;
+$headingColor: #6B0000;
+
+$quoteBack: #CFD4BD;
+
+$linkColor: #42affa;
+$linkColorHover: lighten( $linkColor, 15% );
+$selectionBackgroundColor: lighten( $linkColor, 25% );
+
+
+@import "reveal-js/css/theme/template/theme";
+
+section.has-light-background {
+	&, h1, h2, h3, h4, h5, h6 {
+		color: #222;
+	}
+}
+
+.reveal pre {
+	margin: 50px auto;
+}
+
+section blockquote {
+    background-color: $quoteBack !important;
+}
