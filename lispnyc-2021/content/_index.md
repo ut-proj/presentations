@@ -11,10 +11,9 @@ src = "logo-v6.svg"
 [//]: Speaker-Notes:
 {{% note %}}
 
-Hello, and welcome!
-
-My name is Duncan McGreggor -- today I'm giving the second half of the talk
-that I gave at Lambda Days, just a few weeks ago.
+So, I've given several talks this year on undertone and music programming with
+Extempore and Lisp Flavoured Erlang -- this aims to be casual combination of the
+best of those :-)
 
 {{% /note %}}
 
@@ -37,10 +36,8 @@ that I gave at Lambda Days, just a few weeks ago.
 [//]: Speaker-Notes:
 {{% note %}}
 
-... in particular, the need for a reliable soft real-time
-system capable of speaking multiple protocols, of creating servers or
-connecting to them, and of being able to continue operations, even
-as parts of the system encounter unrecoverable errors and must be restarted.
+The general plan is to cover these topics, but this is less a presentation
+and more a dialogue -- so we may end up veering off at odd angles ...
 
 {{% /note %}}
 
@@ -57,6 +54,9 @@ as parts of the system encounter unrecoverable errors and must be restarted.
 {{% note %}}
 
 Here are some superficial bullet points about me ...
+
+Btw, my first computer was a CP/M Kaypro II running on a Zilog-80 chip,
+with the entire OS on a 5 1/4 floppy -- no hard drive.
 
 {{% /note %}}
 
@@ -75,11 +75,14 @@ Here are some superficial bullet points about me ...
 [//]: Speaker-Notes:
 {{% note %}}
 
-... and some more, relating to music.
+Here's some musical background info ...
 
-If I can draw your attention to the end of that list --
+But there's a new bullet for this list now:
 
-About 6 1/2 years ago at OSCON 2014 ...
+Just this semester I started taking classes at Berklee School of Music, online, gearing up
+for a series of courses in arranging and orchestral composition.
+
+How this ties into generative music, though? At OSCON 2014 ...
 
 {{% /note %}}
 
@@ -110,7 +113,7 @@ Andrew and I talked about live coding including my interest in using LFE/OTP alo
 
 I believe he also mentioned previous conversations between himself and Joe Armstrong about Extempore and Erlang -- including some possibilities for collaboration.
 
-I started using Extempore immediately after Andrew's performnace, when he shared his keynote code with me. Yet life pulled me in other directions.
+I started using Extempore immediately after Andrew's performnace, when he shared his keynote code with me. Life pulled me in other directions, and I didn't do much with it
 
 Last year, however, I picked it up again ...
 
@@ -124,9 +127,9 @@ Last year, however, I picked it up again ...
 
 {{% note %}}
 
-... after Aleksander Lisiecki's blog post which covered sound generation in Erlang.
+... after I saw this blog post which covered sound generation in Erlang.
 
-I ported his code to LFE, and sufficiently re-inspired, proceeded to create the undertone project.
+I ported the code to LFE, and sufficiently re-inspired, proceeded to create the undertone project.
 
 ---
 
@@ -136,9 +139,36 @@ I ported his code to LFE, and sufficiently re-inspired, proceeded to create the 
 
 {{% note %}}
 
-undertone came about due to my need to control synthsizers -- both hardware and software -- and run services. For all the separate systems I wanted to manage, a BEAM language felt like the perfect match.
+But _why_ undertone? In a world with SuperCollider, Overtone, SonicPi, etc., what need is there?
 
-I started by reading everything I could on Erlang and music, retracing Joe Armstrong's steps from the mid-2000s up until a few short years ago.
+I didn't want to build a new music system, rather just needed something that could accomodate my music needs.
+
+{{% /note %}}
+
+---
+
+
+## Wherefore undertone?
+
+* I'm a Lisper and want to write Lisp in my spare time
+* I need something that has fault-tolerance baked-in
+* Needs to be network-programming-friendly, too
+
+{{% note %}}
+
+However, these needs were quickly growing, and I was asking a great deal of the systems with which I was working -- and I eventually asked too much, and various components started failing, requiring hand-holding, and more time. I needed something that could do this automatically.
+
+{{% /note %}}
+
+---
+
+## Wherefore undertone?
+
+So LFE as the core language seemed a no-brainer to me.
+
+{{% note %}}
+
+As such, I started by reading everything I could on Erlang and music, retracing Joe Armstrong's steps from the mid-2000s up until a few short years ago.
 
 {{% /note %}}
 
@@ -158,7 +188,6 @@ Ultimately, though, I became frustrated by my admittedly subjective perception t
 
 ---
 
-
 ## Wherefore undertone?
 
 <img src="dm_as_2.jpg" width="50%"/>
@@ -167,7 +196,7 @@ Ultimately, though, I became frustrated by my admittedly subjective perception t
 
 Remembering my wonderful experience with Extempore, I turned there next.
 
-Within a few days I'd added a new backend for it in undertone, one that allowed me to run Extempore code from LFE.
+Within a few days I'd added a new backend in undertone, one that allowed me to run Extempore code from LFE.
 
 {{% /note %}}
 
@@ -179,11 +208,7 @@ Within a few days I'd added a new backend for it in undertone, one that allowed 
 
 {{% note %}}
 
-The real "why" behind undertone isn't a battle of backends, though ...
-
-the heart of the matter is what I wanted to do with it.
-
-In my practice sessions with guitar and synthesizers, I wanted to be able to quickly write just a few lines of code for some ambient backing sounds, or chord progressions against which I could practice scales, or experiment with intervals and counterpoint.
+In my practice sessions with guitar and synthesizers, I wanted to be able to quickly write just a few lines of code for some ambient backing sounds ...
 
 {{% /note %}}
 
@@ -195,19 +220,33 @@ In my practice sessions with guitar and synthesizers, I wanted to be able to qui
 
 {{% note %}}
 
-After so long in the software industry, I'm just much, much faster at writing code than sitting down with a sheaf of blank staves and writing notes. So it needed to be a language in which I had fluency.
+... or chord progressions against which I could practice scales, or experiment with intervals and counterpoint.
 
-And, if I'm going to be writing code in my spare time, it needed to be a language that I love and have fun using. Ergo, LFE.
+Additionally, I've started using undertone for practice sessions where I write code that plays chords progressions randomly, but for which I get visual feedback on the current chord, beats remaining, text chord, etc.
+
+CLICK TO OTHER TAB
 
 {{% /note %}}
 
 ---
 
-## Wherefore undertone?
+## Summary of the "why"s
 
 * Create music in my preferred language
 * Monitoring and automatically restarting OS processes
 * Speak to Open Sound Control servers (i.e., controlling faders on software consoles/mixers)
+
+{{% note %}}
+
+All of that can be distilled into this and the next few slides ...
+
+{{% /note %}}
+
+---
+
+## Summary of the "why"s
+
+
 * Potentially host my own OSC servers
 * Send TCP packages to the Extempore compiler service
 * Automtically reconnect (with backoff support) to required services
@@ -215,49 +254,22 @@ And, if I'm going to be writing code in my spare time, it needed to be a languag
 
 {{% note %}}
 
-Above and beyond that, I needed to be able to control external processes running on the operating system, restarting them as necessary.
-
-There are a lot of features listed here, but that one was biggie for me -- having run into it early on:
-
-I did a lot of experimentation with different MIDI drivers, software synthesizers, VST plugin hosts, and ended up having various applications or their supporting processes, crash.
 
 {{% /note %}}
 
 ---
 
-## Wherefore undertone?
+## Summary of the "why"s
 
-* Create music in my preferred language
-* Monitoring and automatically restarting OS processes
-* Speak to Open Sound Control servers (i.e., controlling faders on software consoles/mixers)
-* Potentially host my own OSC servers
-* Send TCP packages to the Extempore compiler service
-* Automtically reconnect (with backoff support) to required services
-* Be able to restart any of these components in the event of partial or complete system failure
-
-{{% note %}}
-
-Sometimes days of work -- where I'd invested my time in a long chain of trial and error -- were lost. All because just one component I'd been experimenting with was unstable or wasn't designed to do the crazy things I was asking of it.
-
-And to that point ...
-
-{{% /note %}}
-
----
-
-## Wherefore undertone?
-
-Also:
 
 * Maintain multiple, separate state contexts
 * Support a familiar workflow (a REPL!)
 * Provide basic session management (ETS + a handful of functions)
+* Have easy, visual instrumentation on the music as it is being generated
 
 {{% note %}}
 
-I also needed to manage state in a sane manner. As you are all assuradly well aware, the points above and those in the previous slide are features readily available in OTP and those BEAM languages which offer Erlang interoperability.
-
-It is for all these reasons that undertone was born, created in LFE, and built upon the foundation of Erlang and OTP.
+This is how undertone came about ... next, we can take a look at how it has been built.
 
 {{% /note %}}
 
@@ -273,7 +285,7 @@ It is for all these reasons that undertone was born, created in LFE, and built u
 
 undertone is an idea and a set of needs which depend upon multiple systems in order to realise the goal of making music reliably.
 
-Here is a now-classic BEAM depcition of the undertone stack.
+This is the sort of diagram that has been shown at Erlang conferences for years ... 
 
 {{% /note %}}
 
@@ -286,7 +298,9 @@ Here is a now-classic BEAM depcition of the undertone stack.
 [//]: Speaker-Notes:
 {{% note %}}
 
-And here is a diagram that is perhaps a bit more useful: a view of the system configured to use the Extempore backend, with all of the high-level communications involved.
+But here is a diagram that is perhaps a bit more useful: a view of the system configured to use the Extempore backend, with all of the high-level communications involved.
+
+PAUSE TO WALK THROUGH PROCESS OF MAKING MUSIC
 
 {{% /note %}}
 
@@ -347,7 +361,6 @@ In addition to Extempore support ...
 
 I'm working on a new backend using two CLI tools created by the head of software engineering at Moog: Geert Bevin. These are Erlang ports opened to long running OS processes.
 
-I had hoped to have this ready to show you today, but I instead chose to create a new demo using a sampled grand piano, which you'll be hearing in a few minutes.
 {{% /note %}}
 
 ---
@@ -392,11 +405,12 @@ If we zoom in on the section ...
 We can see a little more of how undertone pulls systems together.
 
 This particular view of the architecture shows which undertone LFE and OTP components are connected to each other and how.
+
+PAUSE TO TALK ABOUT HOW THE SYSTEM STARTS UP
+
 {{% /note %}}
 
 ---
-
-{{< slide transition="none" >}}
 
 ## Architecture
 
@@ -404,9 +418,10 @@ This particular view of the architecture shows which undertone LFE and OTP compo
 
 [//]: Speaker-Notes:
 {{% note %}}
-The grey box in the middle-right is what you will being seeing during the demo.
 
-It represents a custom Extempore REPL -- written in LFE -- that has its own commands that are separate from the LFE REPL.
+SWITCH TO EMACS 
+
+SHOW LFE / OTP CODE
 
 {{% /note %}}
 
@@ -550,7 +565,7 @@ Also, there are _two_ OS processes for the separate binaries which comprise this
 [//]: Speaker-Notes:
 {{% note %}}
 
-I'm running short on time, and want to leave enough room for the demo and walk-through ...
+The clients and servers used as part of undertone are standard fare, so I'll just gloss over them
 
 {{% /note %}}
 
@@ -566,7 +581,7 @@ I'm running short on time, and want to leave enough room for the demo and walk-t
 [//]: Speaker-Notes:
 {{% note %}}
 
-So I will breeze past these slides.
+But if anyone has questions about these we can pause here ...
 
 {{% /note %}}
 
@@ -583,8 +598,7 @@ So I will breeze past these slides.
 [//]: Speaker-Notes:
 {{% note %}}
 
-They simply give more details about the types of clients and servers used in undertone ...
-
+... or come back to them ...
 
 {{% /note %}}
 
@@ -599,7 +613,7 @@ They simply give more details about the types of clients and servers used in und
 [//]: Speaker-Notes:
 {{% note %}}
 
-... It's all standard fare, though -- nothing too remarkable. I can cover any questions around these during the "Open Discussion".
+The `gen_server` is a generic server pattern in OTP, but there are other more special purposes ones such as `gen_event`, `gen_statem`, etc.
 
 {{% /note %}}
 
@@ -619,11 +633,9 @@ They simply give more details about the types of clients and servers used in und
 [//]: Speaker-Notes:
 {{% note %}}
 
-I do want to pause here, though:
+Erlang's solution to language interop is really quite elegant: no FFIs, but rather -- being a message-passing language -- it defines a simple binary protocol, and data in this protocal can be sent to the `stdin` of a running process.
 
-Of all the languages where I have had to utilise their support for inter-process
-communication or reading from and writing to pipes, every single one was
-a bit painful -- with the notable and laudable exception of Erlang.
+I've used this approach to manage other applications from LFE, all stuffed into an OTP supervision tree. This includes apps written in Common Lisp, Go, Python, and even Rust.
 
 {{% /note %}}
 
@@ -643,34 +655,10 @@ a bit painful -- with the notable and laudable exception of Erlang.
 [//]: Speaker-Notes:
 {{% note %}}
 
-As much as I love OTP and regale non-BEAM programmers with the virtues of
-its behaviours and callbacks, on the undertone project I have become
-deeply enamored with Erlang ports. Though I've used them before, this is
-the first time they have formed the very basis of a project, and working
-with them has been a delight.
+Spawning external processes can be a little tricky, though -- especially if they will be long-lived.
 
-{{% /note %}}
-
----
-
-## External Processes & Erlang Ports
-
-* Previously used `erlang:open_port` (`spawn_executable`)
-* Switched to `exec` library (which still uses Erlang ports)
-* Extempore backend:
-  * capturing output from Extempore
-* "Bevin" backend:
-  * sending MIDI (OS process)
-  * receiving MIDI (separate OS process)
-  * stdout is captured for both and logged / parsed
-
-[//]: Speaker-Notes:
-{{% note %}}
-
-That being said, there are some problems one encounters when shutting down
-an OTP application that has spawned long-running executables. And, to be
-fair, managing the lifetime of an OS process is arguably not the purview
-of a simple, low-level library.
+The low-level Erlang library functions for spawning and linking to an external process are just that 
+and don't include external process management and tracking capabilities.
 
 {{% /note %}}
 
@@ -707,7 +695,7 @@ is just as simple to use as Erlang ports. And erlexec itself uses ports.
 [//]: Speaker-Notes:
 {{% note %}}
 
-Which brings me to something else I wanted to call out: special mention for a few of the key dependencies upon which undertone relies.
+I have several slides on the dependencies, each kind of interesting in its own right, but we can skip over these unless there are specific questions about them.
 
 {{% /note %}}
 
@@ -722,8 +710,7 @@ Which brings me to something else I wanted to call out: special mention for a fe
 [//]: Speaker-Notes:
 {{% note %}}
 
-And without which the task of realising the vision of the undertone
-project would have taken much more time ...
+...
 
 {{% /note %}}
 
@@ -739,9 +726,7 @@ project would have taken much more time ...
 [//]: Speaker-Notes:
 {{% note %}}
 
-Or might simply have made the prospect of it too daunting.
-
-Side note: Andrea's blog post is one of the best demonstrations for `gen_statem` I've yet encountered.
+...
 
 {{% /note %}}
 
@@ -755,7 +740,7 @@ Side note: Andrea's blog post is one of the best demonstrations for `gen_statem`
 [//]: Speaker-Notes:
 {{% note %}}
 
-And a special mention of juse one of the very many contributions by Fred to the Erlang ecosystem.
+...
 
 {{% /note %}}
 
@@ -813,9 +798,11 @@ ackermann(M, N) ->
 [//]: Speaker-Notes:
 {{% note %}}
 
-It would be a shame to give a BEAM talk without actually doing a dialectical comparison, so here is something for those who have not seen any LFE before:
+Let's take a look at some code, next :-)
 
-This is some syntax in Erlang and LFE for function-head pattern-matching and recursion.
+This is some syntax in Erlang and LFE for function-head pattern-matching and recursion,
+and should give you a sense of how LFE evolved as a Lisp, with its parent essentially being
+a distributed Prolog ;-)
 
 {{% /note %}}
 
@@ -954,8 +941,11 @@ This is what most Extempore performers use -- and is what you'll see me using in
 [//]: Speaker-Notes:
 {{% note %}}
 
-One of the benefits of using undertone with the Extempore backend is the
-REPL it provides for Extempore.
+Extempore, of course, can stand on its own magnificently -- I frequently switch between using it
+in undertone and using it in Emacs.
+
+One of the benefits of using it with undertone, though, is the
+REPL for Extepore which undertone provides.
 
 {{% /note %}}
 
@@ -1027,48 +1017,66 @@ read-eval-print and loop :-)
 
 ---
 
-## Demo
+## Demos
+
+
 
 [//]: Speaker-Notes:
 {{% note %}}
 
-Okay, time for the demo!
+Okay, demo time.
 
-A note of caution, though: here there be dissonance! Sometimes for effect, and sometimes by unhappy accident. Due to the ramdom nature of generative music every performance is different -- often _very_ different.
+Word of warning, though -- general teleconferencing has not reached the levels of hi-fi that we would all love to have. And routing sound on a computer for such software is cumbersome at best!
 
-The key thing to keep in mind while listening is to think of the _possibillties_ of what can be done, not the limitations of a given performance :-)
-
-
-
-Without further ado ...
+There's a chance you will hear cracking and popping in the audio that I don't hear at my end, which is too bad -- since I've chosen absolutely gorgeous audio samples and plugins that are a delight for the ears.
 
 {{% /note %}}
 
 ---
 
-## Demo
+## Demos
+
+* Eric Whitacre Choir sample: https://soundcloud.com/oubiwann/chopin-op-28-no-20-c-minor-choir
+* Ravenscroft 9' grand: https://soundcloud.com/oubiwann/journey-of-the-source-variation-3
+
+(the latter was created with LFE/undertone)
 
 [//]: Speaker-Notes:
 {{% note %}}
 
-There are two parts to the demo I will be giving you:
-
-1. The first is a recording comprised of piano adaptation for what was originally a piece for banjo and orchestra. This is then used as the basis in some generative techniques utilising Markov chains for control of chord progressions, melody generation, volumes, and sustain.
-2. After that is the second part, which walks through those generative techniques.
-
-Without further ado ...
+If you'd like to hear two examples of those without teleconferencing sodftware getting in the way, you can give these a listen.
 
 {{% /note %}}
 
 ---
 
-## Demo
+## Demo 1
+
+(pre-recorded)
+
+https://youtu.be/-mTUNt3N5AU
 
 [//]: Speaker-Notes:
 {{% note %}}
 
-If you experienced any network dropout or if the sound quality over Zoom was not
-to your liking, you can view the demo on YouTube at this link.
+Okay, with that aside, we'll start with a pre-recorded demo ...
+
+SWITCH TAB
+
+{{% /note %}}
+
+---
+
+## Demo 2
+
+Interactive session in Emacs ...
+
+Source talk: https://youtu.be/xpSYWd_aIiI
+
+[//]: Speaker-Notes:
+{{% note %}}
+
+This next demo is based upon a talk that Andrew Sorensen gave at CodeMania 2015 where he gives a tongue-in-cheek rendition of Wester musical history cast against the various series of Black Adder.
 
 {{% /note %}}
 
